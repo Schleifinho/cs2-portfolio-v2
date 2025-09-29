@@ -22,6 +22,16 @@
         restart: true
       redis:
         condition: service_started
+        
+
+  csportfolio-web-app:
+    build:
+      context: ./CSPortfolioWebApp   # subfolder is the build context
+      dockerfile: Dockerfile         # Dockerfile inside subfolder
+    container_name: csportfolio-web-app
+    ports:
+      - "4040:80"
+    #restart: unless-stopped
 
   csitemimporter:
     image: csitemimporter
