@@ -8,6 +8,8 @@
 
     <ItemGroup>
         <PackageReference Include="Swashbuckle.AspNetCore"/>
+        <PackageReference Include="Refit" />
+        <PackageReference Include="Refit.HttpClientFactory" />
     </ItemGroup>
     
 </Project>

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPortfolioAPI", "CSPortfol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPortfolioLib", "CSPortfolioLib\CSPortfolioLib.csproj", "{F998A499-8F2C-41BD-8A67-5498BAF412EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSItemImporter", "CSItemImporter\CSItemImporter.csproj", "{F92945DA-3E92-4881-AD75-891F53A80B13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F92945DA-3E92-4881-AD75-891F53A80B13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F92945DA-3E92-4881-AD75-891F53A80B13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F92945DA-3E92-4881-AD75-891F53A80B13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F92945DA-3E92-4881-AD75-891F53A80B13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

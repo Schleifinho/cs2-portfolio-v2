@@ -28,5 +28,7 @@
         <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.0" />
         <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.0" />
         <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
+        <PackageVersion Include="Refit" Version="8.0.0" />
+        <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     </ItemGroup>
 </Project>

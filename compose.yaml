@@ -23,6 +23,16 @@
       redis:
         condition: service_started
 
+  csitemimporter:
+    image: csitemimporter
+    build:
+      context: .
+      dockerfile: CSItemImporter/Dockerfile
+    depends_on:
+      csportfolioapi:
+        condition: service_started
+        restart: true
+      
   cs-db:
     image: timescale/timescaledb:latest-pg16
     container_name: csportfolio-db
@@ -78,3 +88,4 @@
 volumes:
   db_data:
 #endregion
+  
