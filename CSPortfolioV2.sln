@@ -1,6 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPortfolioV2", "CSPortfolioV2\CSPortfolioV2.csproj", "{AA587EF3-548A-4DEA-9AEE-3BF82D222066}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6C126ADA-4642-46B5-88AC-3A005569269C}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPortfolioAPI", "CSPortfolioAPI\CSPortfolioAPI.csproj", "{0B361F9C-03AE-435E-A451-330076139476}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSPortfolioLib", "CSPortfolioLib\CSPortfolioLib.csproj", "{F998A499-8F2C-41BD-8A67-5498BAF412EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +15,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AA587EF3-548A-4DEA-9AEE-3BF82D222066}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA587EF3-548A-4DEA-9AEE-3BF82D222066}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA587EF3-548A-4DEA-9AEE-3BF82D222066}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA587EF3-548A-4DEA-9AEE-3BF82D222066}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B361F9C-03AE-435E-A451-330076139476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B361F9C-03AE-435E-A451-330076139476}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B361F9C-03AE-435E-A451-330076139476}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B361F9C-03AE-435E-A451-330076139476}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F998A499-8F2C-41BD-8A67-5498BAF412EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
