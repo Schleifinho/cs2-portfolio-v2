@@ -1,0 +1,80 @@
+﻿services:
+
+  csportfolioapi:
+    image: csportfolioapi
+    build:
+      context: .
+      dockerfile: CSPortfolioAPI/Dockerfile
+    ports:
+      - "4000:8080"
+    environment:
+      DB_USER: csapi
+      DB_PASSWORD: secretpass
+      DB_NAME: csportfolio
+      DB_HOST: cs-db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ConnectionStrings__DefaultConnection: Host=cs-db;Port=5432;Database=csportfolio;Username=csapi;Password=secretpass
+      MassTransitConnectionStrings__DefaultConnection: Host=masstransit-db;Port=5432;Database=masstransit;Username=root;Password=root
+    depends_on:
+      cs-db:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_started
+
+  cs-db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: csportfolio-db
+    environment:
+      POSTGRES_USER: csapi
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: csportfolio
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U csapi -d csportfolio" ]
+      interval: 5s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+      
+  redis:
+    image: redis
+    
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    container_name: rabbitmq-cs
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - masstransit-db
+
+  masstransit-db:
+    container_name: masstransit-db-cs
+    image: postgres:17.4-alpine3.21
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=masstransit
+      - POSTGRES_INITDB_ARGS="--encoding=UTF8"
+    ports:
+      - "45432:5432"
+  #endregion
+
+#region Volumes
+volumes:
+  db_data:
+#endregion

@@ -1,0 +1,6 @@
+@CSPortfolioAPI_HostAddress = http://localhost:5267
+
+GET {{CSPortfolioAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
