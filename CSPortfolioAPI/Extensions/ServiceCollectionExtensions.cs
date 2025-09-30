@@ -11,7 +11,11 @@ public static class ServiceCollectionExtensions
     {
         // Add DbContext with PostgreSQL configuration
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<CSDbContext>(options => { options.UseNpgsql(connectionString); });
+        services.AddDbContext<CSDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString)
+            .UseLowerCaseNamingConvention();
+        });
         
         var masstransitConnectionString = configuration.GetConnectionString("MassTransitConnection") ??
                                           "UserName=root;Password=root;Server=masstransit-db;Database=masstransit;";

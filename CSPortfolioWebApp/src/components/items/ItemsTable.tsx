@@ -5,11 +5,8 @@ import { Item } from "@/types/inventory";
 
 import { Table, TableHead, TableHeader, TableRow, TableBody, TableCell } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit } from "lucide-react";
-
-import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 
 export function ItemsTable() {
   const { data: items = [], isLoading, isError, error } = useQuery<Item[]>({
@@ -23,58 +20,6 @@ export function ItemsTable() {
 
   if (isLoading) return <p className="p-4">Loading items...</p>;
   if (isError) return <p className="p-4 text-red-500">Error: {(error as Error).message}</p>;
-
-  // Render each row (react-window will pass style prop)
-  const Row = ({ index, style }: ListChildComponentProps) => {
-    const item = items[index];
-    return (
-        <TableRow
-            key={item.id}
-            style={style}                         // important for virtualization
-            className="border-border hover:bg-secondary/50"
-        >
-          <TableCell className="flex items-center space-x-3">
-            {item.iconUrl && (
-                <img
-                    src={`https://community.steamstatic.com/economy/image/${item.iconUrl}`}
-                    alt={item.name}
-                    className="h-16 w-16 rounded object-cover border border-border"
-                />
-            )}
-            <div>
-              <p className="font-medium text-foreground">{item.name}</p>
-            </div>
-          </TableCell>
-          <TableCell className="text-muted-foreground max-w-xs truncate">
-            {item.marketHashName}
-          </TableCell>
-          <TableCell className="font-medium text-foreground">
-            ${"latestPrice" in item ? (item as any).latestPrice.toFixed(2) : "0.00"}
-          </TableCell>
-          <TableCell>
-            <Badge
-                variant={"quantity" in item && (item as any).quantity > 0 ? "default" : "secondary"}
-                className={
-                  "quantity" in item && (item as any).quantity > 0
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-secondary text-secondary-foreground"
-                }
-            >
-              {"quantity" in item ? (item as any).quantity : 0}
-            </Badge>
-          </TableCell>
-          <TableCell>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-primary/10"
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-          </TableCell>
-        </TableRow>
-    );
-  };
 
   return (
       <div className="flex-1 space-y-6 p-8">
@@ -100,18 +45,19 @@ export function ItemsTable() {
                   <TableHead>Item</TableHead>
                   <TableHead>Market Hash Name</TableHead>
                   <TableHead>Current Price</TableHead>
-                  <TableHead>In Stock</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              {/* Virtualized body */}
               <TableBody>
                 {items.map((item) => (
-                    <TableRow key={item.id} className="border-border hover:bg-secondary/50">
+                    <TableRow
+                        key={item.id}
+                        className="border-border hover:bg-secondary/50"
+                    >
                       <TableCell className="flex items-center space-x-3">
                         {item.iconUrl && (
                             <img
-                                src={"https://community.steamstatic.com/economy/image/" + item.iconUrl}
+                                src={`https://community.steamstatic.com/economy/image/${item.iconUrl}`}
                                 alt={item.name}
                                 className="h-16 w-16 rounded object-cover border border-border"
                             />
@@ -122,6 +68,9 @@ export function ItemsTable() {
                       </TableCell>
                       <TableCell className="text-muted-foreground max-w-xs truncate">
                         {item.marketHashName}
+                      </TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        ${"latestPrice" in item ? (item as any).latestPrice.toFixed(2) : "0.00"}
                       </TableCell>
                       <TableCell>
                         <Button

@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using CSPortfolioLib.Contracts.DTO;
 
-namespace CSPortfolioAPI.Models;
+namespace CSPortfolioLib.DTOs.Transaction;
 
-public class Transaction : DbEntry
+public class TransactionDto : NullableIdDto
 {
     [Required]
     public int InventoryEntryId { get; set; }
-
-    [ForeignKey(nameof(InventoryEntryId))]
-    public InventoryEntry InventoryEntry { get; set; }
 
     [Required]
     public int Quantity { get; set; }
@@ -22,7 +19,4 @@ public class Transaction : DbEntry
     
     [Required]
     public string Type { get; set; }
-    
-    public static string Purchase = "P";
-    public static string Sale = "S";
 }

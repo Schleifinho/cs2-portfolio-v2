@@ -1,22 +1,22 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockItems, mockInventoryEntries, mockPriceHistory } from "@/data/mockData";
+import { useQuery } from "@tanstack/react-query";
+import { getInventoryEntries } from "@/lib/api";
+import {InventoryEntry} from "@/types/inventory";
 
 export function InventoryTable() {
-  const inventoryWithDetails = mockInventoryEntries.map(entry => {
-    const item = mockItems.find(item => item.id === entry.itemId);
-    const latestPrice = mockPriceHistory
-      .filter(price => price.itemId === entry.itemId)
-      .sort((a, b) => new Date(b.timeStamp).getTime() - new Date(a.timeStamp).getTime())[0];
-    
-    return {
-      ...entry,
-      item,
-      latestPrice: latestPrice?.price || 0,
-      totalValue: (latestPrice?.price || 0) * entry.quantityOnHand
-    };
+  const { data: inventoryEntries = [], isLoading, isError, error } = useQuery<InventoryEntry[]>({
+    queryKey: ["inventoryentries"],
+    queryFn: getInventoryEntries,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
+
+  if (isLoading) return <p className="p-4">Loading items...</p>;
+  if (isError) return <p className="p-4 text-red-500">Error: {(error as Error).message}</p>;
 
   return (
     <div className="flex-1 space-y-6 p-8">
@@ -43,43 +43,40 @@ export function InventoryTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inventoryWithDetails.map((entry) => (
-                <TableRow key={entry.id} className="border-border hover:bg-secondary/50">
+              {inventoryEntries.map((inventoryEntry) => (
+                <TableRow key={inventoryEntry.id} className="border-border hover:bg-secondary/50">
                   <TableCell className="flex items-center space-x-3">
-                    {entry.item?.iconUrl && (
-                      <img 
-                        src={entry.item.iconUrl} 
-                        alt={entry.item.name}
-                        className="h-10 w-10 rounded object-cover"
-                      />
+                    {inventoryEntry.iconUrl && (
+                        <img
+                            src={`https://community.steamstatic.com/economy/image/${inventoryEntry.iconUrl}`}
+                            alt={inventoryEntry.name}
+                            className="h-24 w-24 rounded object-cover border border-border"
+                        />
                     )}
-                    <div>
-                      <p className="font-medium text-foreground">{entry.item?.name || 'Unknown Item'}</p>
-                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {entry.item?.marketHashName || 'N/A'}
+                    {inventoryEntry.name || 'N/A'}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                      {entry.quantityOnHand}
+                      {inventoryEntry.quantity}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium text-foreground">
-                    ${entry.latestPrice.toFixed(2)}
+                    {inventoryEntry.currentPrice}
                   </TableCell>
                   <TableCell className="font-medium text-foreground">
-                    ${entry.totalValue.toLocaleString()}
+                    {inventoryEntry.total}
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={entry.quantityOnHand > 0 ? "default" : "destructive"}
-                      className={entry.quantityOnHand > 0 
+                      variant={inventoryEntry.quantity > 0 ? "default" : "destructive"}
+                      className={inventoryEntry.quantity > 0
                         ? "bg-accent text-accent-foreground" 
                         : "bg-destructive text-destructive-foreground"
                       }
                     >
-                      {entry.quantityOnHand > 0 ? 'In Stock' : 'Out of Stock'}
+                      {inventoryEntry.quantity > 0 ? 'In Stock' : 'Out of Stock'}
                     </Badge>
                   </TableCell>
                 </TableRow>

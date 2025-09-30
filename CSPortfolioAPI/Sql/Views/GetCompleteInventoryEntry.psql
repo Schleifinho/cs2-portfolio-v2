@@ -1,0 +1,47 @@
+drop view if exists inventory_entry_view;
+CREATE OR REPLACE VIEW inventory_entry_view AS
+WITH transaction_log AS (
+    SELECT 
+        ie.id,
+        MIN(ie.itemid) AS itemid,
+        SUM(
+            CASE 
+                WHEN t."type" = 'P' THEN t.quantity 
+                ELSE -t.quantity 
+            END
+        ) AS quantity,
+        SUM(
+            CASE 
+                WHEN t."type" = 'P' THEN -t.price 
+                ELSE t.price 
+            END * t.quantity
+        ) AS total
+    FROM inventoryentries ie
+    INNER JOIN transactions t ON t.inventoryentryid = ie.id
+    GROUP BY ie.id
+), agg AS (
+    SELECT 
+        t.id,
+        t.itemid,
+        t.quantity,
+        t.total,
+        p.price,
+        i."name",
+        i.iconurl
+    FROM transaction_log t
+    Left JOIN (
+        SELECT DISTINCT ON (itemid) *
+        FROM pricehistories
+        ORDER BY itemid, "timestamp" DESC
+    ) p ON p.itemid = t.itemid
+    INNER JOIN items i ON i.id = t.itemid
+)
+SELECT 
+    a.id,
+    a.itemid,
+    a."name",
+    a.iconurl,
+    a.quantity::int,
+    a.total::numeric,
+    coalesce(a.price, 0)::numeric as currentprice
+FROM agg a;

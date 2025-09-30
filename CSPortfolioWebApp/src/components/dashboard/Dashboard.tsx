@@ -6,13 +6,13 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export function Dashboard() {
   // Calculate metrics
-  const totalItems = mockInventoryEntries.reduce((sum, entry) => sum + entry.quantityOnHand, 0);
+  const totalItems = mockInventoryEntries.reduce((sum, entry) => sum + entry.quantity, 0);
   const totalValue = mockInventoryEntries.reduce((sum, entry) => {
     const item = mockItems.find(item => item.id === entry.itemId);
     const latestPrice = mockPriceHistory
       .filter(price => price.itemId === entry.itemId)
       .sort((a, b) => new Date(b.timeStamp).getTime() - new Date(a.timeStamp).getTime())[0];
-    return sum + (latestPrice ? latestPrice.price * entry.quantityOnHand : 0);
+    return sum + (latestPrice ? latestPrice.price * entry.quantity : 0);
   }, 0);
   
   const recentTransactions = mockPurchases.length + mockSales.length;
@@ -30,7 +30,7 @@ export function Dashboard() {
     <div className="flex-1 space-y-6 p-8">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
-          Dashboard Overview
+          Dashboard Overviews
         </h2>
       </div>
       
@@ -119,7 +119,7 @@ export function Dashboard() {
                     ...entry,
                     item,
                     latestPrice: latestPrice?.price || 0,
-                    totalValue: (latestPrice?.price || 0) * entry.quantityOnHand
+                    totalValue: (latestPrice?.price || 0) * entry.quantity
                   };
                 })
                 .sort((a, b) => b.totalValue - a.totalValue)
@@ -135,7 +135,7 @@ export function Dashboard() {
                           {entry.item?.name || 'Unknown Item'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Qty: {entry.quantityOnHand}
+                          Qty: {entry.quantity}
                         </p>
                       </div>
                     </div>

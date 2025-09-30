@@ -5,6 +5,6 @@ namespace CSPortfolioLib.Contracts.Controller;
 
 public interface IItemApi
 {
-    [Post("/item")]
+    [Post("/items")]
     Task PostItemAsync([Body] ItemDto item);
 }

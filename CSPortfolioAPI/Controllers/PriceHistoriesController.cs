@@ -8,7 +8,7 @@ namespace CSPortfolioAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PriceHistoryController (ILogger<PriceHistoryController> logger, PriceHistoryRepository repository, IMapper mapper)
+public class PriceHistoriesController (ILogger<PriceHistoriesController> logger, PriceHistoryRepository repository, IMapper mapper)
     : BaseController<PriceHistoryDto, PriceHistory>(logger, repository, mapper)
 {
 }

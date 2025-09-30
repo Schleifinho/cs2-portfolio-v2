@@ -20,8 +20,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'items', label: 'Items', icon: BarChart3 },
     { id: 'prices', label: 'Price History', icon: TrendingUp },
-    { id: 'purchases', label: 'Purchases', icon: ShoppingCart },
-    { id: 'sales', label: 'Sales', icon: DollarSign },
+    { id: 'transactions', label: 'Transactions', icon: ShoppingCart },
   ];
 
   return (

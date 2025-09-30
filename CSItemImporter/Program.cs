@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
-using CSItemImporter;
 using CSPortfolioLib.Contracts.Controller;
 using CSPortfolioLib.DTOs.Item;
 using Microsoft.Extensions.Configuration;
 using Refit;
+
+namespace CSItemImporter;
 
 public class Program
 {
@@ -12,7 +13,7 @@ public class Program
         Thread.Sleep(2000);
         var config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory) // optional if running from bin folder
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("./appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
         
@@ -22,7 +23,8 @@ public class Program
         string apiBaseUrl = config["ApiSettings:Url"];
         string apiPort = config["ApiSettings:Port"];
         
-        var api = RestService.For<IItemApi>($"http://{apiBaseUrl}:{apiPort}/api");
+        Console.WriteLine($"{apiBaseUrl}:{apiPort}/api");
+        var api = RestService.For<IItemApi>($"{apiBaseUrl}:{apiPort}/api");
         
         // Recursively get all .json files
         var files = Directory.GetFiles(folderPath, "*.json", SearchOption.AllDirectories);

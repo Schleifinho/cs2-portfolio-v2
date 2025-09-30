@@ -1,0 +1,8 @@
+﻿SELECT create_hypertable(
+    'pricehistories',  -- table name
+    'timestamp',          -- time column
+    chunk_time_interval => interval '7 day', -- optional, controls chunk size
+    if_not_exists => TRUE
+);
+
+select * from add_dimension('pricehistories', by_hash('itemid', 32));

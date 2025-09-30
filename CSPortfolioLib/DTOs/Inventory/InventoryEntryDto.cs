@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CSPortfolioLib.Contracts.DTO;
+using CSPortfolioLib.DTOs.Item;
 
 namespace CSPortfolioLib.DTOs.Inventory;
 

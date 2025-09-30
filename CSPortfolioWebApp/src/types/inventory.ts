@@ -1,7 +1,11 @@
 export interface InventoryEntry {
   id?: number;
   itemId: number;
-  quantityOnHand: number;
+  name: string;
+  iconUrl: string;
+  quantity: number;
+  total: number;
+  currentPrice: number;
 }
 
 export interface Item {
