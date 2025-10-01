@@ -18,10 +18,10 @@ public abstract class BaseController<TDto, TEntity>(
     protected readonly IMapper Mapper = mapper;
 
     [HttpGet]
-    public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAllAsync()
+    public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAllAsync(int? page, int? pageSize)
     {
         baseLogger.LogInformation($"Get all tournaments");
-        return Ok(Mapper.Map<IEnumerable<TDto>>(await baseRepository.GetAllAsync()));
+        return Ok(Mapper.Map<IEnumerable<TDto>>(await baseRepository.GetAllAsync(page, pageSize)));
     }
 
     [HttpGet("{id:int}")]

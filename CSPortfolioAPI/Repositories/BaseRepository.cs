@@ -9,9 +9,15 @@ public abstract class BaseRepository<TEntity>(CSDbContext context)
     protected readonly CSDbContext Context = context;
     protected readonly DbSet<TEntity> DbSet = context.Set<TEntity>();
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(int? pageNumber, int? pageSize)
     {
-        return await DbSet.ToListAsync();
+        IQueryable<TEntity> query = DbSet;
+        if(pageNumber.HasValue && pageSize.HasValue)
+            query = query
+                .Skip(pageSize.Value * pageNumber.Value)
+                .Take(pageSize.Value);
+        
+        return await query.ToListAsync();
     }
     
     public virtual async Task<TEntity?> GetByIdAsync(int id)

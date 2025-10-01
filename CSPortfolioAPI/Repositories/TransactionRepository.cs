@@ -1,33 +1,55 @@
-﻿using CSPortfolioAPI.Models;
+﻿using CSPortfolioAPI.Errors;
+using CSPortfolioAPI.Models;
 using CSPortfolioLib.DTOs.Purchase;
 using CSPortfolioLib.DTOs.Sale;
+using FluentResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSPortfolioAPI.Repositories;
 
 public class TransactionRepository(CSDbContext context) : BaseRepository<Transaction>(context)
 {
-    public async Task<IEnumerable<Transaction>> GetAllSalesAsync()
+    public async Task<Result<List<Transaction>>> GetAllSalesAsync(int? page = null, int? pageSize = null)
     {
-        return await Context.Transactions.Where(x => x.Type == Transaction.Sale).ToListAsync();
+        if (!page.HasValue || !pageSize.HasValue)
+            return Result.Ok(await Context.Transactions.Where(x => x.Type == Transaction.Sale).ToListAsync());
+        if (page < 0 || pageSize < 1)
+            return Result.Fail("Invalid Page Numbers");
+        
+        var sales = await Context.Transactions
+            .Where(x => x.Type == Transaction.Sale)
+            .Skip(page.Value * pageSize.Value)
+            .Take(pageSize.Value)
+            .ToListAsync();
+        return Result.Ok(sales);
     }
     
-    public async Task<IEnumerable<Transaction>> GetAllPurchasesAsync()
+    public async Task<Result<List<Transaction>>> GetAllPurchasesAsync(int? page = null, int? pageSize = null)
     {
-        return await Context.Transactions.Where(x => x.Type == Transaction.Purchase).ToListAsync();
+        if (!page.HasValue || !pageSize.HasValue)
+            return Result.Ok(await Context.Transactions.Where(x => x.Type == Transaction.Purchase).ToListAsync());
+        if (page < 0 || pageSize < 1)
+            return Result.Fail("Invalid Page Numbers");
+        
+        var sales = await Context.Transactions
+            .Where(x => x.Type == Transaction.Purchase)
+            .Skip(page.Value * pageSize.Value)
+            .Take(pageSize.Value)
+            .ToListAsync();
+        return Result.Ok(sales);
     }
     
-    public async Task<Transaction> AddSaleAsync(SaleDto saleDto)
+    public async Task<Result<Transaction>> AddSaleAsync(SaleDto saleDto)
     {
-        var inventoryEntry = await Context.InventoryEntries.FindAsync(saleDto.Id);
+        var inventoryEntry = await Context.InventoryEntries.FindAsync(saleDto.InventoryEntryId);
         if (inventoryEntry == null)
         {
-            throw new NullReferenceException("inventoryEntry not found");
+            return Result.Fail<Transaction>(new NotFoundError("InventoryEntry not found."));
         }
 
         if (inventoryEntry.QuantityOnHand < saleDto.Quantity)
         {
-            throw new ArgumentException("QuantityOnHand must be less than or equal to sale.");
+            return Result.Fail<Transaction>(new BadRequestError("InventoryEntry is out of stock."));
         }
 
         var transaction = new Transaction()
@@ -49,58 +71,65 @@ public class TransactionRepository(CSDbContext context) : BaseRepository<Transac
 
             // Commit if everything succeeded
             await t.CommitAsync();
+            return Result.Ok(transaction);
         }
-        catch
+        catch(Exception ex)
         {
             // Rollback on error
             await t.RollbackAsync();
-            throw;
+            return Result.Fail<Transaction>(new Error(ex.Message));
         }
-        return transaction;
     }
     
-    public async Task<Transaction> AddPurchaseAsync(PurchaseRequestDto purchaseRequestDto)
+    public async Task<Result<Transaction>> AddPurchaseAsync(PurchaseRequestDto purchaseRequestDto)
     {
-        throw new NotImplementedException();
-        /*
-        var inventoryEntry = await Context.InventoryEntries.FindAsync(purchaseRequestDto.Id);
-        if (inventoryEntry == null)
-        {
-            throw new NullReferenceException("inventoryEntry not found");
-        }
-
-        if (inventoryEntry.QuantityOnHand < saleDto.Quantity)
-        {
-            throw new ArgumentException("QuantityOnHand must be less than or equal to sale.");
-        }
-
-        var transaction = new Transaction()
-        {
-            Type = Transaction.Sale,
-            Timestamp = saleDto.Timestamp,
-            Price = saleDto.Price,
-            Quantity = saleDto.Quantity,
-            InventoryEntryId = inventoryEntry.Id
-        };
-
         await using var t = await context.Database.BeginTransactionAsync();
-        
         try
         {
-            inventoryEntry.QuantityOnHand -= saleDto.Quantity;
+
+            InventoryEntry? inventoryEntry;
+            if (purchaseRequestDto.InventoryEntryId.HasValue)
+            {
+                inventoryEntry = await Context.InventoryEntries.FindAsync(purchaseRequestDto.InventoryEntryId.Value);
+                if (inventoryEntry == null)
+                {
+                    return Result.Fail<Transaction>(new NotFoundError("InventoryEntry not found."));
+                }
+            }
+            else
+            {
+                inventoryEntry = new InventoryEntry()
+                {
+                    ItemId = purchaseRequestDto.ItemId!.Value,
+                    QuantityOnHand = 0,
+                };
+                await Context.InventoryEntries.AddAsync(inventoryEntry);
+                await Context.SaveChangesAsync();
+            }
+
+            var transaction = new Transaction()
+            {
+                Type = Transaction.Purchase,
+                Timestamp = purchaseRequestDto.Timestamp,
+                Price = purchaseRequestDto.Price,
+                Quantity = purchaseRequestDto.Quantity,
+                InventoryEntryId = inventoryEntry.Id
+            };
+
+            
+            inventoryEntry.QuantityOnHand += purchaseRequestDto.Quantity;
             await Context.Transactions.AddAsync(transaction);
             await Context.SaveChangesAsync();
 
             // Commit if everything succeeded
             await t.CommitAsync();
+            return Result.Ok(transaction);
         }
-        catch
+        catch (Exception ex)
         {
             // Rollback on error
             await t.RollbackAsync();
-            throw;
+            return Result.Fail<Transaction>(new Error(ex.Message));
         }
-        return transaction;
-        */
     }
 }
