@@ -1,5 +1,7 @@
 using CSPortfolioAPI.Extensions;
 using CSPortfolioAPI.Models;
+using CSPortfolioLib.Producers;
+using MessageBrokerLib.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -34,6 +36,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddRabbitMQProducer(builder.Configuration, 
+    cfg => cfg.AddScoped<PriceUpdateEventProducer>());
 
 #region Run APP
 var app = builder.Build();

@@ -23,7 +23,6 @@
       redis:
         condition: service_started
         
-
   csportfolio-web-app:
     build:
       context: ./CSPortfolioWebApp   # subfolder is the build context
@@ -41,8 +40,16 @@
     depends_on:
       csportfolioapi:
         condition: service_started
-        restart: true
-      
+        
+  cspriceupdater:
+    image: cspriceupdater
+    build:
+      context: .
+      dockerfile: CSPriceUpdater/Dockerfile
+    depends_on:
+      csportfolioapi:
+        condition: service_started
+  
   cs-db:
     image: timescale/timescaledb:latest-pg16
     container_name: csportfolio-db
@@ -98,4 +105,3 @@
 volumes:
   db_data:
 #endregion
-  
