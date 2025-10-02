@@ -27,3 +27,13 @@ export async function getPurchases(): Promise<Purchase[]> {
     const res = await api.get<Purchase[]>("/transactions/purchases"); // adjust endpoint to your backend
     return res.data;
 }
+
+export async function addItems(item: Omit<Item, "id">): Promise<Item> {
+    const res = await api.post<Item>("/items", item); // send item as body
+    return res.data;
+}
+
+export async function deleteItem(itemId: number): Promise<void> {
+    const res = await api.delete<void>(`/items/${itemId}`); // send item as body
+    return res.data;
+}
