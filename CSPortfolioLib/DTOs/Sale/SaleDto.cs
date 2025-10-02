@@ -6,7 +6,7 @@ namespace CSPortfolioLib.DTOs.Sale;
 public class SaleDto : NullableIdDto
 {
     [Required]
-    public int InventoryEntryId { get; set; }
+    public int ItemId { get; set; }
 
     [Required]
     public int Quantity { get; set; }

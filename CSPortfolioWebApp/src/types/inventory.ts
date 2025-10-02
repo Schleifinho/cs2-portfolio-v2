@@ -1,11 +1,12 @@
 export interface InventoryEntry {
-  id?: number;
   itemId: number;
   name: string;
+  marketHashName: string;
   iconUrl: string;
   quantity: number;
-  total: number;
+  totalValue: number;
   currentPrice: number;
+  trend: number;
 }
 
 export interface Item {
@@ -22,9 +23,15 @@ export interface PriceHistory {
   price: number;
 }
 
+export interface PriceUpdateEvent {
+  itemId: number;
+  marketHashName: string;
+}
+
+
 export interface Purchase {
   id?: number;
-  inventoryEntryId: number;
+  itemId: number;
   quantity: number;
   price: number;
   timestamp: Date;
@@ -32,7 +39,7 @@ export interface Purchase {
 
 export interface Sale {
   id?: number;
-  inventoryEntryId: number;
+  itemId: number;
   quantity: number;
   price: number;
   timestamp: Date;

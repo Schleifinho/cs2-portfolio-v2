@@ -41,7 +41,7 @@ public class TransactionRepository(CSDbContext context) : BaseRepository<Transac
     
     public async Task<Result<Transaction>> AddSaleAsync(SaleDto saleDto)
     {
-        var inventoryEntry = await Context.InventoryEntries.FindAsync(saleDto.InventoryEntryId);
+        var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == saleDto.ItemId);
         if (inventoryEntry == null)
         {
             return Result.Fail<Transaction>(new NotFoundError("InventoryEntry not found."));
@@ -86,21 +86,12 @@ public class TransactionRepository(CSDbContext context) : BaseRepository<Transac
         await using var t = await context.Database.BeginTransactionAsync();
         try
         {
-
-            InventoryEntry? inventoryEntry;
-            if (purchaseRequestDto.InventoryEntryId.HasValue)
-            {
-                inventoryEntry = await Context.InventoryEntries.FindAsync(purchaseRequestDto.InventoryEntryId.Value);
-                if (inventoryEntry == null)
-                {
-                    return Result.Fail<Transaction>(new NotFoundError("InventoryEntry not found."));
-                }
-            }
-            else
+            var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == purchaseRequestDto.ItemId);
+            if (inventoryEntry == null)
             {
                 inventoryEntry = new InventoryEntry()
                 {
-                    ItemId = purchaseRequestDto.ItemId!.Value,
+                    ItemId = purchaseRequestDto.ItemId,
                     QuantityOnHand = 0,
                 };
                 await Context.InventoryEntries.AddAsync(inventoryEntry);
@@ -115,7 +106,6 @@ public class TransactionRepository(CSDbContext context) : BaseRepository<Transac
                 Quantity = purchaseRequestDto.Quantity,
                 InventoryEntryId = inventoryEntry.Id
             };
-
             
             inventoryEntry.QuantityOnHand += purchaseRequestDto.Quantity;
             await Context.Transactions.AddAsync(transaction);

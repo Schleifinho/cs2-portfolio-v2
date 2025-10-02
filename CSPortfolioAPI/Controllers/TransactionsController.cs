@@ -35,7 +35,6 @@ public class TransactionsController (ILogger<TransactionsController> logger,
             var dto = new SaleDto()
             {
                 Id = response.Value.Id,
-                InventoryEntryId = response.Value.InventoryEntryId,
                 Quantity = response.Value.Quantity,
                 Price = response.Value.Price,
                 Timestamp = response.Value.Timestamp
@@ -60,9 +59,6 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPost("purchase")]
     public async Task<ActionResult<PurchaseResponseDto>> AddPurchaseAsync([FromBody] PurchaseRequestDto purchaseDto)
     {
-        if (purchaseDto.ItemId.HasValue == false && purchaseDto.InventoryEntryId.HasValue == false)
-            return BadRequest();
-        
         var response = await repository.AddPurchaseAsync(purchaseDto);
         if (response.IsSuccess)
         {

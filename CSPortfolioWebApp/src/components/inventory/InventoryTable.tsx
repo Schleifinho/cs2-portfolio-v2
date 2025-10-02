@@ -1,5 +1,5 @@
 import { useRef, useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 import {
@@ -18,22 +18,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowUpDown } from "lucide-react";
+import {Search, ArrowUpDown, ShoppingCart, Edit, Trash, RefreshCcw, DollarSign} from "lucide-react";
 
-import { getInventoryEntries } from "@/lib/api";
-import { InventoryEntry } from "@/types/inventory";
+import {api, getInventoryEntries, sendPriceUpdateEvent} from "@/lib/api";
+import {InventoryEntry, PriceUpdateEvent} from "@/types/inventory";
+import {Button} from "@/components/ui/button.tsx";
+import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
+import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
 
 export function InventoryTable() {
+  const queryClient = useQueryClient();
   const { data: inventoryEntries = [], isLoading, isError, error } =
       useQuery<InventoryEntry[]>({
-        queryKey: ["inventoryentries"],
+        queryKey: ["inventoryEntries"],
         queryFn: getInventoryEntries,
         select: (data) =>
-            [...data].sort((a, b) => (b.total ?? 0) - (a.total ?? 0)),
+            [...data].sort((a, b) => (b.trend ?? 0) - (a.trend ?? 0)),
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 30,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
+        refetchInterval: 1000 * 60 * 2,
       });
 
 
@@ -49,7 +53,7 @@ export function InventoryTable() {
   }, [inventoryEntries, search]);
 
   // --- Sorting state ---
-  type SortKey = "name" | "quantity" | "unitPrice" | "total" | null;
+  type SortKey = "name" | "quantity" | "totalValue" | "currentPrice" | "trend" | null;
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
@@ -80,13 +84,17 @@ export function InventoryTable() {
           valA = a.quantity;
           valB = b.quantity;
           break;
-        case "unitPrice":
+        case "currentPrice":
           valA = a.currentPrice;
           valB = b.currentPrice;
           break;
-        case "total":
-          valA = a.total;
-          valB = b.total;
+        case "totalValue":
+          valA = a.totalValue;
+          valB = b.totalValue;
+          break;
+        case "trend":
+          valA = a.trend;
+          valB = b.trend;
           break;
         default:
           valA = "";
@@ -108,7 +116,23 @@ export function InventoryTable() {
     overscan: 10,
   });
 
-  if (isLoading) return <p className="p-4">Loading items...</p>;
+  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+
+  const handlePriceRefresh = async(itemId:number, marketHashName:string) => {
+    let item:PriceUpdateEvent = {itemId: itemId, marketHashName: marketHashName};
+    await sendPriceUpdateEvent(item);
+    await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
+  }
+
+  const handlePriceRefreshAll = async() => {
+    for (const item of sortedEntries) {
+      await handlePriceRefresh(item.itemId, item.marketHashName);
+    }
+  }
+
+    if (isLoading) return <p className="p-4">Loading items...</p>;
   if (isError)
     return (
         <p className="p-4 text-red-500">Error: {(error as Error).message}</p>
@@ -117,26 +141,47 @@ export function InventoryTable() {
   return (
       <div className="flex-1 space-y-6 p-8">
         {/* Search bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
+        <div className="flex items-center gap-4">
+          {/* Title - 50% width */}
+          <h2 className="w-1/2 text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
             Inventory Management
           </h2>
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+
+          {/* Search bar - flex-grow to fill remaining space */}
+          <div className="relative flex-1 max-w-full">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
             <Input
                 type="text"
                 placeholder="Search by name..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-full"
             />
           </div>
+
+          {/* Button - takes only necessary space */}
+          <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => queryClient.invalidateQueries({queryKey: ["inventoryEntries"]})}
+          >
+            <RefreshCcw className="h-4 w-4"/>
+          </Button>
         </div>
 
         <Card className="bg-gradient-card shadow-card">
           <CardHeader>
             <CardTitle className="text-foreground">
               Current Inventory ({sortedEntries.length})
+              <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={async () => await handlePriceRefreshAll()}
+              >
+                <RefreshCcw className="h-4 w-4"/> Price Refresh
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -161,18 +206,23 @@ export function InventoryTable() {
                       Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
                     </TableHead>
                     <TableHead
-                        onClick={() => handleSort("unitPrice")}
-                        className="cursor-pointer select-none text-muted-foreground"
-                    >
-                      Unit Price <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
-                    </TableHead>
-                    <TableHead
-                        onClick={() => handleSort("total")}
+                        onClick={() => handleSort("totalValue")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
                       Total Value <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
                     </TableHead>
-                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead
+                        onClick={() => handleSort("currentPrice")}
+                        className="cursor-pointer select-none text-muted-foreground"
+                    >
+                      Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                    </TableHead>
+                    <TableHead
+                        onClick={() => handleSort("trend")}
+                        className="cursor-pointer select-none text-muted-foreground">
+                      Trend <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                    </TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -184,7 +234,7 @@ export function InventoryTable() {
                     const entry = sortedEntries[vRow.index];
                     return (
                         <TableRow
-                            key={entry.id}
+                            key={entry.itemId}
                             style={{ height: vRow.size }}
                             className="border-border hover:bg-secondary/50"
                         >
@@ -193,7 +243,7 @@ export function InventoryTable() {
                                 <img
                                     src={`https://community.steamstatic.com/economy/image/${entry.iconUrl}`}
                                     alt={entry.name}
-                                    className="h-24 w-24 rounded object-cover border border-border"
+                                    className="h-20 w-20 rounded object-cover border border-border"
                                 />
                             )}
                           </TableCell>
@@ -203,48 +253,107 @@ export function InventoryTable() {
                           <TableCell>
                             <Badge
                                 variant="secondary"
-                                className="bg-primary/10 text-primary border-primary/20"
                             >
                               {entry.quantity}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-medium text-foreground">
-                            {entry.currentPrice}
+                            <Badge
+                                variant="secondary"
+                                className="bg-primary/10 text-primary border-primary/20"
+                            >
+                              {entry.totalValue}
+                            </Badge>
                           </TableCell>
                           <TableCell className="font-medium text-foreground">
-                            {entry.total}
+                            <Badge
+                                variant="secondary"
+                                className="bg-primary/10 text-primary border-primary/20"
+                            >
+                              {entry.currentPrice}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium text-foreground">
+                            <Badge
+                                variant="secondary"
+                                className={`${
+                                    entry.trend > 0
+                                        ? "bg-green-700/10 text-green-700 border-green-700/20"
+                                        : entry.trend < 0
+                                            ? "bg-red-700/10 text-red-700 border-red-700/20"
+                                            : "bg-primary/10 text-primary border-primary/20"
+                                }`}
+                            >
+                              {entry.trend}
+                            </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                                variant={
-                                  entry.quantity > 0 ? "default" : "destructive"
-                                }
-                                className={
-                                  entry.quantity > 0
-                                      ? "bg-accent text-accent-foreground"
-                                      : "bg-destructive text-destructive-foreground"
-                                }
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                                onClick={() => {
+                                  setSelectedItemId(entry.itemId); //
+                                  setPurchaseDialogOpen(true);     // open the dialog
+                                }}
                             >
-                              {entry.quantity > 0 ? "In Stock" : "Out of Stock"}
-                            </Badge>
+                              <ShoppingCart className="h-3 w-3" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                                onClick={() => {
+                                  setSelectedItemId(entry.itemId); //
+                                  setSaleDialogOpen(true);     // open the dialog
+                                }}
+                            >
+                              <DollarSign className="h-3 w-3" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                                onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
+                            >
+                              <RefreshCcw className="h-3 w-3" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                              >
+                              <Edit className="h-3 w-3" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                     );
                   })}
-
-                  {/* Spacer at the bottom */}
-                  <tr
-                      style={{
-                        height:
-                            rowVirtualizer.getTotalSize() -
-                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                      }}
-                  />
                 </TableBody>
               </Table>
             </div>
           </CardContent>
         </Card>
+        {selectedItemId !== null && (
+            <AddSaleDialog
+                open={saleDialogOpen}
+                onOpenChange={(open) => {
+                  setSaleDialogOpen(open);
+                  if (!open) setSelectedItemId(null); // clear after close
+                }}
+                itemId={selectedItemId}
+            />
+        )}
+        {selectedItemId !== null && (
+            <AddPurchaseDialog
+                open={purchaseDialogOpen}
+                onOpenChange={(open) => {
+                  setPurchaseDialogOpen(open);
+                  if (!open) setSelectedItemId(null); // clear after close
+                }}
+                itemId={selectedItemId}
+            />
+        )}
       </div>
   );
 }

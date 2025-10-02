@@ -20,6 +20,5 @@ public class CoreProfiles : Profile
         CreateMap<PurchaseResponseDto, Transaction>().ReverseMap();
         CreateMap<SaleDto, Transaction>().ReverseMap();
         CreateMap<InventoryEntryDto, InventoryEntry>().ReverseMap();
-        CreateMap<InventoryEntryCompleteDto, InventoryEntryView>().ReverseMap();
     }
 }
