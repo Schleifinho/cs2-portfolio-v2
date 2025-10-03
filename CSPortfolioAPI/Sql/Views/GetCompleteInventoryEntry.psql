@@ -12,21 +12,21 @@ WITH transaction_log AS (
         ) AS quantity,
         SUM(
             CASE 
-                WHEN t."type" = 'P' THEN -t.price 
-                ELSE t.price 
+                WHEN t."type" = 'P' THEN t.price 
+                ELSE -t.price 
             END * t.quantity
-        ) AS total
+        )::numeric AS balance
     FROM inventoryentries ie
     INNER JOIN transactions t ON t.inventoryentryid = ie.id
     GROUP BY ie.id
 ), agg AS (
     SELECT 
-        t.id,
         t.itemid,
         t.quantity,
-        t.total,
+        t.balance,
         p.price,
         i."name",
+        i.markethashname,
         i.iconurl
     FROM transaction_log t
     Left JOIN (
@@ -37,11 +37,12 @@ WITH transaction_log AS (
     INNER JOIN items i ON i.id = t.itemid
 )
 SELECT 
-    a.id,
     a.itemid,
     a."name",
+    a.markethashname,
     a.iconurl,
     a.quantity::int,
-    a.total::numeric,
-    coalesce(a.price, 0)::numeric as currentprice
+    a.quantity * coalesce(a.price, 0)::numeric as totalValue,
+    coalesce(a.price, 0)::numeric as currentprice,
+    (a.quantity * coalesce(a.price, 0)::numeric - a.balance) as trend
 FROM agg a;

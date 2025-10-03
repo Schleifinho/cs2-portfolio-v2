@@ -185,10 +185,10 @@ export function InventoryTable() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-                ref={parentRef}
-                className="relative h-[600px] w-full overflow-auto no-scrollbar"
-            >
+            <div ref={parentRef} className="relative w-full overflow-auto no-scrollbar"
+                 style={{
+                   height: `calc(100vh - 275px)`, // fill remaining screen height
+                 }}>
               <Table className="table-fixed border-collapse">
                 <TableHeader>
                   <TableRow className="border-border">
@@ -197,30 +197,30 @@ export function InventoryTable() {
                         onClick={() => handleSort("name")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Name <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      Name <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead
                         onClick={() => handleSort("quantity")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead
                         onClick={() => handleSort("totalValue")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Total Value <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      Total Value <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead
                         onClick={() => handleSort("currentPrice")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead
                         onClick={() => handleSort("trend")}
                         className="cursor-pointer select-none text-muted-foreground">
-                      Trend <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      Trend <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -228,14 +228,14 @@ export function InventoryTable() {
 
                 <TableBody>
                   {/* Spacer at the top */}
-                  <tr style={{ height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+                  <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
 
                   {rowVirtualizer.getVirtualItems().map((vRow) => {
                     const entry = sortedEntries[vRow.index];
                     return (
                         <TableRow
                             key={entry.itemId}
-                            style={{ height: vRow.size }}
+                            style={{height: vRow.size}}
                             className="border-border hover:bg-secondary/50"
                         >
                           <TableCell className="flex items-center space-x-3">
@@ -297,7 +297,7 @@ export function InventoryTable() {
                                   setPurchaseDialogOpen(true);     // open the dialog
                                 }}
                             >
-                              <ShoppingCart className="h-3 w-3" />
+                              <ShoppingCart className="h-3 w-3"/>
                             </Button>
                             <Button
                                 variant="ghost"
@@ -308,7 +308,7 @@ export function InventoryTable() {
                                   setSaleDialogOpen(true);     // open the dialog
                                 }}
                             >
-                              <DollarSign className="h-3 w-3" />
+                              <DollarSign className="h-3 w-3"/>
                             </Button>
                             <Button
                                 variant="ghost"
@@ -316,19 +316,26 @@ export function InventoryTable() {
                                 className="h-8 w-8 p-0 hover:bg-primary/10"
                                 onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
                             >
-                              <RefreshCcw className="h-3 w-3" />
+                              <RefreshCcw className="h-3 w-3"/>
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 hover:bg-primary/10"
-                              >
-                              <Edit className="h-3 w-3" />
+                            >
+                              <Edit className="h-3 w-3"/>
                             </Button>
                           </TableCell>
                         </TableRow>
                     );
                   })}
+                  <tr
+                      style={{
+                        height:
+                            rowVirtualizer.getTotalSize() -
+                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                      }}
+                  />
                 </TableBody>
               </Table>
             </div>

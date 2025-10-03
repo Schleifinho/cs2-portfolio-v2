@@ -132,7 +132,10 @@ export function ItemsTable() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div ref={parentRef} className="relative h-[600px] w-full overflow-auto no-scrollbar">
+            <div ref={parentRef} className="relative w-full overflow-auto no-scrollbar"
+                 style={{
+                   height: `calc(100vh - 220px)`, // fill remaining screen height
+                 }}>
               <Table className="table-fixed border-collapse">
                 <TableHeader>
                   <TableRow className="border-border">
@@ -142,21 +145,21 @@ export function ItemsTable() {
                         className="cursor-pointer select-none text-muted-foreground"
                     >
                       Market Hash Name
-                      <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
+                      <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody>
-                  <tr style={{ height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+                  <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
 
                   {rowVirtualizer.getVirtualItems().map((vRow) => {
                     const item = sortedEntries[vRow.index];
                     return (
                         <TableRow
                             key={item.id}
-                            style={{ height: vRow.size }}
+                            style={{height: vRow.size}}
                             className="border-border hover:bg-secondary/50"
                         >
                           <TableCell className="flex items-center space-x-3">
@@ -182,7 +185,7 @@ export function ItemsTable() {
                                       setSelectedItemId(item.id);
                                       setPurchaseDialogOpen(true);
                                     }}>
-                              <ShoppingCart className="h-3 w-3" />
+                              <ShoppingCart className="h-3 w-3"/>
                             </Button>
                             <Button
                                 variant="ghost"
@@ -193,7 +196,7 @@ export function ItemsTable() {
                                   setEditDialogOpen(true);
                                 }}
                             >
-                              <Edit className="h-3 w-3" />
+                              <Edit className="h-3 w-3"/>
                             </Button>
                             <Button
                                 variant="ghost"
@@ -201,12 +204,19 @@ export function ItemsTable() {
                                 className="h-8 w-8 p-0 hover:bg-primary/10"
                                 onClick={() => handleDelete(item.id)}
                             >
-                              <Trash className="h-3 w-3" />
+                              <Trash className="h-3 w-3"/>
                             </Button>
                           </TableCell>
                         </TableRow>
                     );
                   })}
+                  <tr
+                      style={{
+                        height:
+                            rowVirtualizer.getTotalSize() -
+                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                      }}
+                  />
                 </TableBody>
               </Table>
             </div>
