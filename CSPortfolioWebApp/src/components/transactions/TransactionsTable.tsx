@@ -1,171 +1,198 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { mockItems, mockInventoryEntries, mockPurchases, mockSales } from "@/data/mockData";
+import { useState, useMemo, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  getPurchases,
+  getSales,
+  deletePurchase,
+  deleteSale,
+} from "@/lib/api";
 
-interface TransactionsTableProps {
-  type: 'purchases' | 'sales';
-}
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 
-export function TransactionsTable({ type }: TransactionsTableProps) {
-  const transactions = type === 'purchases' ? mockPurchases : mockSales;
-  
-  const transactionsWithDetails = transactions.map(transaction => {
-    const inventoryEntry = mockInventoryEntries.find(entry => entry.id === transaction.inventoryEntryId);
-    const item = inventoryEntry ? mockItems.find(item => item.id === inventoryEntry.itemId) : null;
-    
-    return {
-      ...transaction,
-      item,
-      totalValue: transaction.price * transaction.quantity
-    };
+import { AddPurchaseDialog } from "@/components/transactions/AddPurchasesDialog";
+import { AddSaleDialog } from "@/components/transactions/AddSaleDialog";
+
+import { PurchaseFull, SaleFull } from "@/types/inventory";
+import SingleTransactionTable from "@/components/transactions/SingleTransactionTable";
+
+export function TransactionsTable() {
+  const queryClient = useQueryClient();
+  // Queries
+  const {
+    data: purchases = [],
+    isLoading: loadingPurchases,
+    isError: errorPurchases,
+  } = useQuery<PurchaseFull[]>({
+    queryKey: ["purchases"],
+    queryFn: getPurchases,
+    staleTime: 5 * 60 * 1000,
   });
 
+  const {
+    data: sales = [],
+    isLoading: loadingSales,
+    isError: errorSales,
+  } = useQuery<SaleFull[]>({
+    queryKey: ["sales"],
+    queryFn: getSales,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Sort
+  type SortKey = "timestamp" | "price" | "quantity" | "name";
+  const [sortKey, setSortKey] = useState<SortKey>("timestamp");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortTransactions = (data: (PurchaseFull | SaleFull)[]) => {
+    return [...data].sort((a, b) => {
+      let valA: any;
+      let valB: any;
+
+      if (sortKey === "timestamp") {
+        valA = new Date(a.timestamp).getTime();
+        valB = new Date(b.timestamp).getTime();
+      } else if (sortKey === "price") {
+        valA = a.price;
+        valB = b.price;
+      } else if (sortKey === "quantity") {
+        valA = a.quantity;
+        valB = b.quantity;
+      } else if (sortKey === "name") {
+        valA = a.name;
+        valB = b.name;
+      }
+
+      return sortOrder === "asc" ? valA - valB : valB - valA;
+    });
+  };
+
+  const sortedPurchases = useMemo(
+      () => sortTransactions(purchases),
+      [purchases, sortKey, sortOrder]
+  );
+  const sortedSales = useMemo(
+      () => sortTransactions(sales),
+      [sales, sortKey, sortOrder]
+  );
+
+  // Virtualization
+  const purchaseParentRef = useRef<HTMLDivElement>(null);
+  const saleParentRef = useRef<HTMLDivElement>(null);
+
+  const purchaseVirtualizer = useVirtualizer({
+    count: sortedPurchases.length,
+    getScrollElement: () => purchaseParentRef.current,
+    estimateSize: () => 64,
+    overscan: 10,
+  });
+
+  const saleVirtualizer = useVirtualizer({
+    count: sortedSales.length,
+    getScrollElement: () => saleParentRef.current,
+    estimateSize: () => 64,
+    overscan: 10,
+  });
+
+  // Editing
+  const [editingPurchase, setEditingPurchase] = useState<PurchaseFull | null>(null);
+  const [editingSale, setEditingSale] = useState<SaleFull | null>(null);
+
+  // Handlers
+  const handleDeletePurchase = async (id: number) => {
+    if (!confirm("Delete this purchase?")) return;
+    try {
+      await deletePurchase(id);
+      toast({ title: "Purchase deleted" });
+      await queryClient.invalidateQueries({queryKey: ["purchases"]});
+      await queryClient.invalidateQueries({queryKey: ["inventoryEntries"]});
+    } catch {
+      toast({ title: "Failed to delete purchase", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteSale = async (id: number) => {
+    if (!confirm("Delete this sale?")) return;
+    try {
+      await deleteSale(id);
+      toast({ title: "Sale deleted" });
+      await queryClient.invalidateQueries({queryKey: ["sales"]});
+      await queryClient.invalidateQueries({queryKey: ["inventoryEntries"]});
+    } catch {
+      toast({ title: "Failed to delete sale", variant: "destructive" });
+    }
+  };
+
   return (
-    <div className="flex-1 space-y-6 p-8">
-      <div className="flex items-center justify-between">
+      <div className="flex-1 space-y-6 p-8">
         <h2 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
-          {type === 'purchases' ? 'Purchase History' : 'Sales History'}
+          Transactions
         </h2>
-        <Button className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary">
-          <Plus className="mr-2 h-4 w-4" />
-          Add {type === 'purchases' ? 'Purchase' : 'Sale'}
-        </Button>
+
+        <Tabs defaultValue="purchases" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full bg-secondary">
+            <TabsTrigger value="purchases">Purchases</TabsTrigger>
+            <TabsTrigger value="sales">Sales</TabsTrigger>
+          </TabsList>
+
+          {/* Purchases Tab */}
+          <TabsContent value="purchases" className="space-y-4">
+            <SingleTransactionTable
+                title="Purchase Transactions"
+                data={sortedPurchases}
+                loading={loadingPurchases}
+                error={errorPurchases}
+                parentRef={purchaseParentRef}
+                virtualizer={purchaseVirtualizer}
+                onSort={handleSort}
+                onEdit={setEditingPurchase}
+                onDelete={handleDeletePurchase}
+            />
+          </TabsContent>
+
+          {/* Sales Tab */}
+          <TabsContent value="sales" className="space-y-4">
+            <SingleTransactionTable
+                title="Sales Transactions"
+                data={sortedSales}
+                loading={loadingSales}
+                error={errorSales}
+                parentRef={saleParentRef}
+                virtualizer={saleVirtualizer}
+                onSort={handleSort}
+                onEdit={setEditingSale}
+                onDelete={handleDeleteSale}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Edit dialogs */}
+        {editingPurchase && (
+            <AddPurchaseDialog
+                open={true}
+                onOpenChange={() => setEditingPurchase(null)}
+                purchase={editingPurchase}
+                itemId={editingPurchase.itemId}
+            />
+        )}
+        {editingSale && (
+            <AddSaleDialog
+                open={true}
+                onOpenChange={() => setEditingSale(null)}
+                sale={editingSale}
+                itemId={editingSale.itemId}
+            />
+        )}
       </div>
-
-      <Tabs defaultValue={type} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-secondary">
-          <TabsTrigger value="purchases">Purchases</TabsTrigger>
-          <TabsTrigger value="sales">Sales</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="purchases" className="space-y-4">
-          <Card className="bg-gradient-card shadow-card">
-            <CardHeader>
-              <CardTitle className="text-foreground">Purchase Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead className="text-muted-foreground">Item</TableHead>
-                    <TableHead className="text-muted-foreground">Quantity</TableHead>
-                    <TableHead className="text-muted-foreground">Unit Price</TableHead>
-                    <TableHead className="text-muted-foreground">Total</TableHead>
-                    <TableHead className="text-muted-foreground">Date</TableHead>
-                    <TableHead className="text-muted-foreground">Type</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockPurchases.map((purchase) => {
-                    const inventoryEntry = mockInventoryEntries.find(entry => entry.id === purchase.inventoryEntryId);
-                    const item = inventoryEntry ? mockItems.find(item => item.id === inventoryEntry.itemId) : null;
-                    
-                    return (
-                      <TableRow key={purchase.id} className="border-border hover:bg-secondary/50">
-                        <TableCell className="flex items-center space-x-3">
-                          {item?.iconUrl && (
-                            <img 
-                              src={item.iconUrl} 
-                              alt={item.name}
-                              className="h-8 w-8 rounded object-cover"
-                            />
-                          )}
-                          <span className="font-medium text-foreground">{item?.name || 'Unknown Item'}</span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                            {purchase.quantity}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          ${purchase.price.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          ${(purchase.price * purchase.quantity).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(purchase.timestamp).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-accent text-accent-foreground">
-                            Purchase
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sales" className="space-y-4">
-          <Card className="bg-gradient-card shadow-card">
-            <CardHeader>
-              <CardTitle className="text-foreground">Sales Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead className="text-muted-foreground">Item</TableHead>
-                    <TableHead className="text-muted-foreground">Quantity</TableHead>
-                    <TableHead className="text-muted-foreground">Unit Price</TableHead>
-                    <TableHead className="text-muted-foreground">Total</TableHead>
-                    <TableHead className="text-muted-foreground">Date</TableHead>
-                    <TableHead className="text-muted-foreground">Type</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockSales.map((sale) => {
-                    const inventoryEntry = mockInventoryEntries.find(entry => entry.id === sale.inventoryEntryId);
-                    const item = inventoryEntry ? mockItems.find(item => item.id === inventoryEntry.itemId) : null;
-                    
-                    return (
-                      <TableRow key={sale.id} className="border-border hover:bg-secondary/50">
-                        <TableCell className="flex items-center space-x-3">
-                          {item?.iconUrl && (
-                            <img 
-                              src={item.iconUrl} 
-                              alt={item.name}
-                              className="h-8 w-8 rounded object-cover"
-                            />
-                          )}
-                          <span className="font-medium text-foreground">{item?.name || 'Unknown Item'}</span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                            {sale.quantity}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          ${sale.price.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          ${(sale.price * sale.quantity).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(sale.timestamp).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-primary text-primary-foreground">
-                            Sale
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
   );
 }

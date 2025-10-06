@@ -18,9 +18,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {Search, ArrowUpDown, ShoppingCart, Edit, Trash, RefreshCcw, DollarSign} from "lucide-react";
+import {Search, ArrowUpDown, ShoppingCart, Edit, RefreshCcw, DollarSign} from "lucide-react";
 
-import {api, getInventoryEntries, sendPriceUpdateEvent} from "@/lib/api";
+import {getInventoryEntries, sendPriceUpdateEvent} from "@/lib/api";
 import {InventoryEntry, PriceUpdateEvent} from "@/types/inventory";
 import {Button} from "@/components/ui/button.tsx";
 import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
@@ -192,12 +192,11 @@ export function InventoryTable() {
               <Table className="table-fixed border-collapse">
                 <TableHeader>
                   <TableRow className="border-border">
-                    <TableHead className="text-muted-foreground">Item</TableHead>
                     <TableHead
                         onClick={() => handleSort("name")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Name <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                      Item <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead
                         onClick={() => handleSort("quantity")}
@@ -241,14 +240,14 @@ export function InventoryTable() {
                           <TableCell className="flex items-center space-x-3">
                             {entry.iconUrl && (
                                 <img
-                                    src={`https://community.steamstatic.com/economy/image/${entry.iconUrl}`}
+                                    src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
                                     alt={entry.name}
                                     className="h-20 w-20 rounded object-cover border border-border"
                                 />
                             )}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {entry.name || "N/A"}
+                            <div>
+                              <p className="font-medium text-foreground">{entry.name}</p>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge

@@ -1,19 +1,17 @@
-﻿namespace CSPortfolioLib.DTOs.Purchase;
+﻿using CSPortfolioLib.Contracts.DTO;
 
-public class PurchaseResponseDto
+namespace CSPortfolioLib.DTOs.Purchase;
+
+public class PurchaseDto : NullableIdDto
 {
-    public int? Id { get; set; }
-    public int InventoryEntryId { get; set; }
+    public int ItemId { get; set; }
     public int Quantity { get; set; }
     public double Price { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
 
-public class PurchaseRequestDto
+public class PurchaseCompleteDto : PurchaseDto
 {
-    public int Id { get; set; }
-    public int ItemId { get; set; }
-    public int Quantity { get; set; }
-    public double Price { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string Name {get; set;}
+    public string IconUrl {get; set;}
 }

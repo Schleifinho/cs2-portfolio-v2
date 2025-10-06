@@ -49,7 +49,7 @@ export function AddPurchaseDialog({
         try {
             if (purchase?.id) {
                 // edit mode
-                await updatePurchase({ ...purchase, ...form });
+                await updatePurchase({ itemId, ...purchase, ...form });
                 toast({ title: "Purchase updated", variant: "default" });
             } else {
                 // add mode
@@ -62,6 +62,7 @@ export function AddPurchaseDialog({
             }
 
             // Refresh data
+            await queryClient.invalidateQueries({ queryKey: ["purchases"] });
             await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
 
             setOpen(false);

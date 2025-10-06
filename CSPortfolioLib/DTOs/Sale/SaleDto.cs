@@ -17,3 +17,11 @@ public class SaleDto : NullableIdDto
     [Required]
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
+
+public class SaleCompleteDto : SaleDto
+{
+    [Required]
+    public string Name { get; set; }
+    [Required]
+    public string IconUrl { get; set; }
+}

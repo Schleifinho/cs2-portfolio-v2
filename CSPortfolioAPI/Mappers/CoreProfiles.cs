@@ -17,8 +17,18 @@ public class CoreProfiles : Profile
         CreateMap<ItemDto, Item>().ReverseMap();
         CreateMap<PriceHistoryDto, PriceHistory>().ReverseMap();
         CreateMap<TransactionDto, Transaction>().ReverseMap();
-        CreateMap<PurchaseResponseDto, Transaction>().ReverseMap();
+        CreateMap<PurchaseDto, Transaction>().ReverseMap();
+        CreateMap<Transaction, PurchaseCompleteDto>()
+            .ForMember(dest => dest.ItemId,   opt => opt.MapFrom(src => src.InventoryEntry.Item.Id))
+            .ForMember(dest => dest.Name,   opt => opt.MapFrom(src => src.InventoryEntry.Item.Name))
+            .ForMember(dest => dest.IconUrl,opt => opt.MapFrom(src => src.InventoryEntry.Item.IconUrl))
+            .ReverseMap();
         CreateMap<SaleDto, Transaction>().ReverseMap();
+        CreateMap<Transaction, SaleCompleteDto>()
+            .ForMember(dest => dest.ItemId,   opt => opt.MapFrom(src => src.InventoryEntry.Item.Id))
+            .ForMember(dest => dest.Name,   opt => opt.MapFrom(src => src.InventoryEntry.Item.Name))
+            .ForMember(dest => dest.IconUrl,opt => opt.MapFrom(src => src.InventoryEntry.Item.IconUrl))
+            .ReverseMap();
         CreateMap<InventoryEntryDto, InventoryEntry>().ReverseMap();
     }
 }

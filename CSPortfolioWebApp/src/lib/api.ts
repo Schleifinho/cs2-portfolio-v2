@@ -1,5 +1,5 @@
 ﻿import axios from "axios";
-import {InventoryEntry, Item, PriceUpdateEvent, Purchase, Sale} from "@/types/inventory.ts";
+import {InventoryEntry, Item, PriceUpdateEvent, Purchase, PurchaseFull, Sale, SaleFull} from "@/types/inventory.ts";
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL, // dynamically picks from .env
     headers: {
@@ -18,8 +18,8 @@ export async function getInventoryEntries(): Promise<InventoryEntry[]> {
     return res.data;
 }
 
-export async function getSales(): Promise<Sale[]> {
-    const res = await api.get<Sale[]>("/transactions/sales"); // adjust endpoint to your backend
+export async function getSales(): Promise<SaleFull[]> {
+    const res = await api.get<SaleFull[]>("/transactions/sales"); // adjust endpoint to your backend
     return res.data;
 }
 
@@ -29,7 +29,7 @@ export async function addSale(sale: Omit<Sale, "id">): Promise<Sale> {
 }
 
 export async function updateSale(sale:Sale): Promise<Sale> {
-    const res = await api.put<Sale>("/transactions/sale", sale); // adjust endpoint to your backend
+    const res = await api.put<Sale>(`/transactions/sale/${sale.id}`, sale); // adjust endpoint to your backend
     return res.data;
 }
 
@@ -38,8 +38,8 @@ export async function deleteSale(id: number): Promise<void> {
     return res.data;
 }
 
-export async function getPurchases(): Promise<Purchase[]> {
-    const res = await api.get<Purchase[]>("/transactions/purchases"); // adjust endpoint to your backend
+export async function getPurchases(): Promise<PurchaseFull[]> {
+    const res = await api.get<PurchaseFull[]>("/transactions/purchases"); // adjust endpoint to your backend
     return res.data;
 }
 
@@ -49,7 +49,7 @@ export async function addPurchaseByItemId(purchase: Omit<Purchase, "id">): Promi
 }
 
 export async function updatePurchase(purchase: Purchase): Promise<Purchase> {
-    const res = await api.put<Purchase>("/transactions/purchase", purchase); // adjust endpoint to your backend
+    const res = await api.put<Purchase>(`/transactions/purchase/${purchase.id}`, purchase); // adjust endpoint to your backend
     return res.data;
 }
 

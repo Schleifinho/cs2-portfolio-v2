@@ -139,12 +139,11 @@ export function ItemsTable() {
               <Table className="table-fixed border-collapse">
                 <TableHeader>
                   <TableRow className="border-border">
-                    <TableHead>Item</TableHead>
                     <TableHead
                         onClick={() => handleSort("name")}
                         className="cursor-pointer select-none text-muted-foreground"
                     >
-                      Market Hash Name
+                      Item
                       <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
                     <TableHead>Actions</TableHead>
@@ -173,9 +172,6 @@ export function ItemsTable() {
                             <div>
                               <p className="font-medium text-foreground">{item.name}</p>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground max-w-xs truncate">
-                            {item.marketHashName}
                           </TableCell>
                           <TableCell>
                             <Button variant="ghost"
