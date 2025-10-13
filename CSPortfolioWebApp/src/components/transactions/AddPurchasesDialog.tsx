@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogTitle,
@@ -11,35 +10,38 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {addPurchaseByItemId, updatePurchase} from "@/lib/api";
+import { addPurchaseByItemId, updatePurchase } from "@/lib/purchasesApi";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import {Purchase} from "@/types/inventory.ts";
+import { Purchase } from "@/types/Purchase.ts";
 
 export interface AddPurchaseDialogProps {
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
-    purchase?: Purchase; // if passed, dialog works in edit mode
+    purchase?: Purchase; // edit mode if passed
     itemId: number;
 }
 
 export function AddPurchaseDialog({
-                                      open: controlledOpen,
+                                      open,
                                       onOpenChange,
                                       purchase,
                                       itemId,
                                   }: AddPurchaseDialogProps) {
     const queryClient = useQueryClient();
-    const [open, setOpen] = useState(controlledOpen ?? false);
+
     const [form, setForm] = useState({
         quantity: purchase?.quantity ?? 1,
         price: purchase?.price ?? 0,
     });
 
-    // Sync controlled open state
+    // Reset form when item or purchase changes
     useEffect(() => {
-        if (controlledOpen !== undefined) setOpen(controlledOpen);
-    }, [controlledOpen]);
+        setForm({
+            quantity: purchase?.quantity ?? 1,
+            price: purchase?.price ?? 0,
+        });
+    }, [itemId, purchase]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -50,7 +52,7 @@ export function AddPurchaseDialog({
             if (purchase?.id) {
                 // edit mode
                 await updatePurchase({ itemId, ...purchase, ...form });
-                toast({ title: "Purchase updated", variant: "default" });
+                toast({ title: "Purchase updated" });
             } else {
                 // add mode
                 await addPurchaseByItemId({
@@ -58,26 +60,21 @@ export function AddPurchaseDialog({
                     itemId,
                     timestamp: new Date(),
                 });
-                toast({ title: "Purchase added", variant: "default" });
+                toast({ title: "Purchase added" });
             }
 
-            // Refresh data
+            // Refresh queries
             await queryClient.invalidateQueries({ queryKey: ["purchases"] });
             await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
 
-            setOpen(false);
+            onOpenChange?.(false); // ✅ close via parent
         } catch (err) {
             toast({ title: "Failed to save purchase", variant: "destructive" });
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); onOpenChange?.(o); }}>
-            {!purchase && (
-                <DialogTrigger asChild>
-                    <Button>Add Purchase</Button>
-                </DialogTrigger>
-            )}
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{purchase ? "Edit Purchase" : "Add Purchase"}</DialogTitle>
@@ -110,7 +107,9 @@ export function AddPurchaseDialog({
                 </div>
 
                 <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+                        Cancel
+                    </Button>
                     <Button
                         className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary"
                         onClick={handleSubmit}

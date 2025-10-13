@@ -20,7 +20,7 @@ const Index = () => {
       case "prices":
         return <PriceHistoryChart />;
       case "transactions":
-        return <TransactionsTable type="purchases" />;
+        return <TransactionsTable />;
       default:
         return <Dashboard />;
     }

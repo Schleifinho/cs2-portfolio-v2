@@ -1,0 +1,29 @@
+﻿drop function if exists get_dashboard_numbers(timestamptz);
+CREATE OR REPLACE FUNCTION get_dashboard_numbers(fromDate timestamptz)
+RETURNS TABLE (
+    totalitems BIGINT,
+    totaluniqueitems BIGINT,
+    rawvalue NUMERIC,
+    totaltrend NUMERIC,
+    recentTransactions BIGINT
+) AS $$
+BEGIN
+    -- 1️⃣ Inventory summary
+    RETURN QUERY
+    WITH inv AS (
+        SELECT
+            COALESCE(SUM(i.quantity), 0)      AS totalItems,
+            COUNT(i.itemid)                   AS totalUniqueItems,
+            COALESCE(SUM(i.totalValue), 0)     AS rawValue,
+            COALESCE(SUM(i.trend), 0) AS totalTrend
+        FROM inventory_entry_view i
+    ), tx AS (
+        -- 2️⃣ Transactions with filter applied dynamically
+        SELECT count(*) AS recentTransactions
+        FROM transactions t
+		where t."timestamp" > '2025-08-01'
+    )
+    SELECT inv.totalitems, inv.totaluniqueitems, inv.rawValue, inv.totaltrend, tx.recentTransactions
+    FROM inv CROSS JOIN tx;
+END;
+$$ LANGUAGE plpgsql;

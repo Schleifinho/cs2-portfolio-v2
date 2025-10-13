@@ -1,12 +1,14 @@
-import { useState, useMemo, useRef } from "react";
+import {useState, useMemo, useRef, useEffect} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-  getPurchases,
   getSales,
-  deletePurchase,
   deleteSale,
-} from "@/lib/api";
+} from "@/lib/salesApi";
+import {
+  getPurchases,
+  deletePurchase,
+} from "@/lib/purchasesApi";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
@@ -14,12 +16,18 @@ import { toast } from "@/hooks/use-toast";
 import { AddPurchaseDialog } from "@/components/transactions/AddPurchasesDialog";
 import { AddSaleDialog } from "@/components/transactions/AddSaleDialog";
 
-import { PurchaseFull, SaleFull } from "@/types/inventory";
+import { PurchaseFull } from "@/types/Purchase";
+import { SaleFull } from "@/types/Sale";
 import SingleTransactionTable from "@/components/transactions/SingleTransactionTable";
+
+// 🔹 UI imports
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export function TransactionsTable() {
   const queryClient = useQueryClient();
-  // Queries
+
+  // 🔹 Queries
   const {
     data: purchases = [],
     isLoading: loadingPurchases,
@@ -40,7 +48,17 @@ export function TransactionsTable() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Sort
+  const [activeTab, setActiveTab] = useState<"purchases" | "sales">("purchases");
+
+  useEffect(() => {
+    if (activeTab === "purchases") {
+      purchaseParentRef.current?.scrollTo(0, 0);
+    } else {
+      saleParentRef.current?.scrollTo(0, 0);
+    }
+  }, [activeTab]);
+
+  // 🔹 Sort
   type SortKey = "timestamp" | "price" | "quantity" | "name";
   const [sortKey, setSortKey] = useState<SortKey>("timestamp");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -69,8 +87,12 @@ export function TransactionsTable() {
         valA = a.quantity;
         valB = b.quantity;
       } else if (sortKey === "name") {
-        valA = a.name;
-        valB = b.name;
+        valA = a.name.toLowerCase();
+        valB = b.name.toLowerCase();
+      }
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
       }
 
       return sortOrder === "asc" ? valA - valB : valB - valA;
@@ -86,36 +108,52 @@ export function TransactionsTable() {
       [sales, sortKey, sortOrder]
   );
 
-  // Virtualization
+  // 🔹 Search
+  const [search, setSearch] = useState("");
+  const filteredPurchases = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    return s
+        ? sortedPurchases.filter((p) => p.name.toLowerCase().includes(s))
+        : sortedPurchases;
+  }, [sortedPurchases, search]);
+
+  const filteredSales = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    return s
+        ? sortedSales.filter((sItem) => sItem.name.toLowerCase().includes(s))
+        : sortedSales;
+  }, [sortedSales, search]);
+
+  // 🔹 Virtualization
   const purchaseParentRef = useRef<HTMLDivElement>(null);
   const saleParentRef = useRef<HTMLDivElement>(null);
 
   const purchaseVirtualizer = useVirtualizer({
-    count: sortedPurchases.length,
+    count: filteredPurchases.length, // <- this must reflect the current data length
     getScrollElement: () => purchaseParentRef.current,
     estimateSize: () => 64,
     overscan: 10,
   });
 
   const saleVirtualizer = useVirtualizer({
-    count: sortedSales.length,
+    count: filteredSales.length, // <- must update when switching tabs
     getScrollElement: () => saleParentRef.current,
     estimateSize: () => 64,
     overscan: 10,
   });
 
-  // Editing
+  // 🔹 Editing
   const [editingPurchase, setEditingPurchase] = useState<PurchaseFull | null>(null);
   const [editingSale, setEditingSale] = useState<SaleFull | null>(null);
 
-  // Handlers
+  // 🔹 Handlers
   const handleDeletePurchase = async (id: number) => {
     if (!confirm("Delete this purchase?")) return;
     try {
       await deletePurchase(id);
       toast({ title: "Purchase deleted" });
-      await queryClient.invalidateQueries({queryKey: ["purchases"]});
-      await queryClient.invalidateQueries({queryKey: ["inventoryEntries"]});
+      await queryClient.invalidateQueries({ queryKey: ["purchases"] });
+      await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
     } catch {
       toast({ title: "Failed to delete purchase", variant: "destructive" });
     }
@@ -126,8 +164,8 @@ export function TransactionsTable() {
     try {
       await deleteSale(id);
       toast({ title: "Sale deleted" });
-      await queryClient.invalidateQueries({queryKey: ["sales"]});
-      await queryClient.invalidateQueries({queryKey: ["inventoryEntries"]});
+      await queryClient.invalidateQueries({ queryKey: ["sales"] });
+      await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
     } catch {
       toast({ title: "Failed to delete sale", variant: "destructive" });
     }
@@ -135,11 +173,26 @@ export function TransactionsTable() {
 
   return (
       <div className="flex-1 space-y-6 p-8">
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
-          Transactions
-        </h2>
+        {/* 🔹 Header with Search */}
+        <div className="flex items-center gap-4">
+          <h2 className="w-1/2 text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
+            Transactions
+          </h2>
 
-        <Tabs defaultValue="purchases" className="w-full">
+          <div className="relative flex-1 max-w-full">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+                type="text"
+                placeholder="Search by name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 w-full"
+            />
+          </div>
+        </div>
+
+        {/* 🔹 Tabs */}
+        <Tabs defaultValue="purchases" className="w-full" onValueChange={(val) => setActiveTab(val as "purchases" | "sales")}>
           <TabsList className="grid grid-cols-2 w-full bg-secondary">
             <TabsTrigger value="purchases">Purchases</TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
@@ -148,7 +201,7 @@ export function TransactionsTable() {
           {/* Purchases Tab */}
           <TabsContent value="purchases" className="space-y-4">
             <SingleTransactionTable
-                title="Purchase Transactions"
+                title="Purchases"
                 data={sortedPurchases}
                 loading={loadingPurchases}
                 error={errorPurchases}
@@ -163,7 +216,7 @@ export function TransactionsTable() {
           {/* Sales Tab */}
           <TabsContent value="sales" className="space-y-4">
             <SingleTransactionTable
-                title="Sales Transactions"
+                title="Sales"
                 data={sortedSales}
                 loading={loadingSales}
                 error={errorSales}

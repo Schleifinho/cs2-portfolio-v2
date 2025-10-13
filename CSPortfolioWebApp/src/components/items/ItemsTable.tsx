@@ -1,8 +1,8 @@
 import { useRef, useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { getItems, deleteItem } from "@/lib/api";
-import { Item } from "@/types/inventory";
+import { getItems, deleteItem } from "@/lib/itemsApi";
+import { Item } from "@/types/Item";
 
 import {
   Table,
@@ -136,17 +136,17 @@ export function ItemsTable() {
                  style={{
                    height: `calc(100vh - 220px)`, // fill remaining screen height
                  }}>
-              <Table className="table-fixed border-collapse">
+              <Table className="table-fixed border-collapse ">
                 <TableHeader>
                   <TableRow className="border-border">
                     <TableHead
                         onClick={() => handleSort("name")}
-                        className="cursor-pointer select-none text-muted-foreground"
+                        className="cursor-pointer select-none text-muted-foreground w-4/5 space-x-3"
                     >
                       Item
                       <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
                     </TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="w-1/5 space-x-2 text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -166,14 +166,14 @@ export function ItemsTable() {
                                 <img
                                     src={`https://community.fastly.steamstatic.com/economy/image/${item.iconUrl}`}
                                     alt={item.name}
-                                    className="h-20 w-20 rounded object-cover border border-border"
+                                    className="h-20 w-20 rounded object-contain border border-border"
                                 />
                             )}
                             <div>
                               <p className="font-medium text-foreground">{item.name}</p>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             <Button variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 p-0 hover:bg-primary/10"

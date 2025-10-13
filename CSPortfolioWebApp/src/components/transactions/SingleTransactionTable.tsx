@@ -61,17 +61,17 @@ export default function SingleTransactionTable({
                                     <TableHead onClick={() => onSort("name")} className="cursor-pointer">
                                         Item <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>
-                                    <TableHead onClick={() => onSort("quantity")} className="cursor-pointer">
+                                    <TableHead onClick={() => onSort("quantity")} className="cursor-pointer text-center">
                                         Quantity <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>
-                                    <TableHead onClick={() => onSort("price")} className="cursor-pointer">
+                                    <TableHead onClick={() => onSort("price")} className="cursor-pointer text-center">
                                         Price <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead onClick={() => onSort("timestamp")} className="cursor-pointer">
+                                    <TableHead className="text-center">Total</TableHead>
+                                    <TableHead onClick={() => onSort("timestamp")} className="cursor-pointer text-center">
                                         Date <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableHead className="text-center">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -91,20 +91,39 @@ export default function SingleTransactionTable({
                                                     <img
                                                         src={`https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}`}
                                                         alt={tx.name}
-                                                        className="h-20 w-20 rounded object-cover border border-border"
+                                                        className="h-20 w-20 rounded object-contain border border-border"
                                                     />
                                                 )}
                                                 <div>
                                                     <p className="font-medium text-foreground">{tx.name}</p>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
-                                                <Badge>{tx.quantity}</Badge>
+                                            <TableCell className="text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {tx.quantity}
+                                                </Badge>
                                             </TableCell>
-                                            <TableCell>${tx.price.toFixed(2)}</TableCell>
-                                            <TableCell>${(tx.quantity * tx.price).toFixed(2)}</TableCell>
-                                            <TableCell>{new Date(tx.timestamp).toLocaleDateString()}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {tx.price.toFixed(2)}€
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {(tx.quantity * tx.price).toFixed(2)}€
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">{new Date(tx.timestamp).toLocaleDateString()}</TableCell>
+                                            <TableCell className="text-center">
                                                 <Button size="sm" variant="ghost" onClick={() => onEdit(tx)}>
                                                     <Edit className="h-4 w-4"/>
                                                 </Button>

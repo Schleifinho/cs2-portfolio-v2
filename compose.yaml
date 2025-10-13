@@ -87,6 +87,9 @@
       retries: 5
     depends_on:
       - masstransit-db
+    command: >
+      bash -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management &&
+      rabbitmq-server"
 
   masstransit-db:
     container_name: masstransit-db-cs

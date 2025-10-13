@@ -77,17 +77,15 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         await using var t = await Context.Database.BeginTransactionAsync();
         try
         {
-            var transaction = await Context.Transactions.FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Sale);
+            var transaction = await Context.Transactions
+                .Include(transaction => transaction.InventoryEntry)
+                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Sale);
             if (transaction == null)
             {
                 return Result.Fail<Transaction>(new NotFoundError("Transaction not found."));
             }
-            
-            var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == saleDto.ItemId);
-            if (inventoryEntry == null)
-            {
-                return Result.Fail<Transaction>(new NotFoundError("Inventory entry not found."));
-            }
+
+            var inventoryEntry = transaction.InventoryEntry;
 
             var diff = saleDto.Quantity - transaction.Quantity;
             transaction.Price = saleDto.Price;
@@ -210,17 +208,15 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         await using var t = await Context.Database.BeginTransactionAsync();
         try
         {
-            var transaction = await Context.Transactions.FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Purchase);
+            var transaction = await Context.Transactions
+                .Include(transaction => transaction.InventoryEntry)
+                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Purchase);
             if (transaction == null)
             {
                 return Result.Fail<Transaction>(new NotFoundError("Transaction not found."));
             }
-            
-            var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == purchaseDto.ItemId);
-            if (inventoryEntry == null)
-            {
-                return Result.Fail<Transaction>(new NotFoundError("Inventory entry not found."));
-            }
+
+            var inventoryEntry = transaction.InventoryEntry;
 
             var diff = purchaseDto.Quantity - transaction.Quantity;
             transaction.Price = purchaseDto.Price;

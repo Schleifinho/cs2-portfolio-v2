@@ -86,7 +86,6 @@ public class TransactionsController (ILogger<TransactionsController> logger,
         var transactions = await repository.GetAllPurchasesAsync(pageNumber, pageSize);
         if (transactions.IsSuccess)
         {
-            logger.LogInformation(transactions.Value[0].InventoryEntry.Item.IconUrl);
             return mapper.Map<List<PurchaseCompleteDto>>(transactions.Value);
         }
         return transactions.ToActionResult();

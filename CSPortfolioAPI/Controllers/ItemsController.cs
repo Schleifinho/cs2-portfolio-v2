@@ -12,4 +12,9 @@ namespace CSPortfolioAPI.Controllers;
 public class ItemsController(ILogger<ItemsController> logger, ItemRepository repository, IMapper mapper)
     : BaseController<ItemDto, Item>(logger, repository, mapper)
 {
+    [HttpGet("total/count")]
+    public async Task<ActionResult<int>> GetItemsCount()
+    {
+        return await repository.GetTotalCount();
+    }
 }

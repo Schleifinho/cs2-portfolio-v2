@@ -1,4 +1,5 @@
 ﻿using CSPortfolioAPI.Models.Views;
+using CSPortfolioLib.DTOs.Inventory;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSPortfolioAPI.Models;
@@ -10,6 +11,8 @@ public class CSDbContext(DbContextOptions<CSDbContext> options) : DbContext(opti
     public DbSet<PriceHistory> PriceHistories { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<InventoryEntryView> InventoryEntryView { get; set; }
+    
+    public DbSet<DashBoardNumbers> DashboardNumbers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +27,10 @@ public class CSDbContext(DbContextOptions<CSDbContext> options) : DbContext(opti
         modelBuilder.Entity<PriceHistory>(entity => { entity.HasKey(p => new {
             p.ItemId, p.TimeStamp
         }); });
+        
+        modelBuilder.Entity<DashBoardNumbers>()
+            .HasNoKey()                   // because the function result has no PK
+            .ToFunction("get_dashboard_numbers");
 
         base.OnModelCreating(modelBuilder);
     }

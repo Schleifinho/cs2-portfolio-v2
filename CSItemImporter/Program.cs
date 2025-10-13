@@ -10,7 +10,6 @@ public class Program
 {
     static async Task Main(string[] args)
     {
-        Thread.Sleep(2000);
         var config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory) // optional if running from bin folder
             .AddJsonFile("./appsettings.json", optional: true, reloadOnChange: true)
@@ -18,7 +17,7 @@ public class Program
             .Build();
         
         // Folder path to search
-        string folderPath = @"./Input";
+        string folderPath = @"./Input/current";
 
         string apiBaseUrl = config["ApiSettings:Url"];
         string apiPort = config["ApiSettings:Port"];

@@ -19,7 +19,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'items', label: 'Items', icon: BarChart3 },
-    { id: 'prices', label: 'Price History', icon: TrendingUp },
+    //{ id: 'prices', label: 'Price History', icon: TrendingUp },
     { id: 'transactions', label: 'Transactions', icon: ShoppingCart },
   ];
 

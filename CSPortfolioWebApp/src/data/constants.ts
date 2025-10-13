@@ -1,0 +1,1 @@
+﻿export const ICON_URL = "https://steamcommunity-a.akamaihd.net/economy/image/";

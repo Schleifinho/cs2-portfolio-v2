@@ -9,7 +9,7 @@ namespace CSPriceUpdater.Services;
 public class ThrottledSteamMarketService(ILogger<ThrottledSteamMarketService> logger, IPriceHistoryApi priceApi, ISteamMarketPriceApi api)
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly TimeSpan _delay = TimeSpan.FromSeconds(2); 
+    private readonly TimeSpan _delay = TimeSpan.FromSeconds(5); 
 
     public async Task<bool> GetItemPriceAsync(int appId, int itemId, string marketHashName)
     {

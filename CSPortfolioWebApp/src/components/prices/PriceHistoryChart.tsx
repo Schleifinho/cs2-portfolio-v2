@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { mockItems, mockPriceHistory } from "@/data/mockData";
 import { useState } from "react";
 
-export function PriceHistoryChart() {
+
+export function PriceHistoryChart() {}
+/*
   const [selectedItemId, setSelectedItemId] = useState<string>("1");
 
   const chartData = mockPriceHistory
@@ -42,7 +43,7 @@ export function PriceHistoryChart() {
                         <img 
                           src={item.iconUrl} 
                           alt={item.name}
-                          className="h-6 w-6 rounded object-cover"
+                          className="h-6 w-6 rounded object-contain"
                         />
                       )}
                       <span>{item.name}</span>
@@ -59,7 +60,7 @@ export function PriceHistoryChart() {
               <img 
                 src={selectedItem.iconUrl} 
                 alt={selectedItem.name}
-                className="h-12 w-12 rounded object-cover border border-border"
+                className="h-12 w-12 rounded object-contain border border-border"
               />
             )}
             <div>
@@ -122,7 +123,7 @@ export function PriceHistoryChart() {
                     <img 
                       src={item.iconUrl} 
                       alt={item.name}
-                      className="h-10 w-10 rounded object-cover"
+                      className="h-10 w-10 rounded object-contain"
                     />
                   )}
                   <div>
@@ -148,4 +149,4 @@ export function PriceHistoryChart() {
       </div>
     </div>
   );
-}
+}*/

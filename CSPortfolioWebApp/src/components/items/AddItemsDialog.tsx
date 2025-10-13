@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addItem, updateItem } from "@/lib/api.ts"; // add updateItem API
+import { addItem, updateItem } from "@/lib/itemsApi.ts"; // add updateItem API
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import {Item} from "@/types/inventory.ts";
+import {Item} from "@/types/Item.ts";
 
 type AddItemDialogProps = {
     item?: Item;
