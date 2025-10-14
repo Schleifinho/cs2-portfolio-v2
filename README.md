@@ -33,7 +33,10 @@ Each Container can be configured via appsettings.json or compose.yaml
 - SwaggerUI => http://localhost:4000/swagger/index.html
 ### csportfolio-web-app
 - Running on http://localhost:4040/
-
+### rabbitmq
+- Depends on MassTransit
+- Handles events between Producers and Consumers
+- Access: http://localhost:15672/#/ user: guest, pw: guest
 ### cspriceupdater
 - Consumes price update events 
 - Updates inventory prices every hour if "ENABLE_PRICE_REFRESH" is enabled
