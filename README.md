@@ -52,6 +52,7 @@ On first run, load the initial CS2 item data into the database:
 ```bash
 psql -h localhost -p 5432 -U csapi -d csportfolio -f Data/DBDumps/items.sql
 ```
+or connect to DB and copy the insert statement 🙂
 
 > **Note:**
 > The dump file (`Data/DBDumps/items.sql`) is partial — CS2 continuously adds new items,
