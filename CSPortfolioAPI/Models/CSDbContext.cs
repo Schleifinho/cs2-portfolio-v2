@@ -1,5 +1,4 @@
 ﻿using CSPortfolioAPI.Models.Views;
-using CSPortfolioLib.DTOs.Inventory;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSPortfolioAPI.Models;
@@ -32,6 +31,10 @@ public class CSDbContext(DbContextOptions<CSDbContext> options) : DbContext(opti
             .HasNoKey()                   // because the function result has no PK
             .ToFunction("get_dashboard_numbers");
 
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(i => new { i.InventoryEntryId, i.Type })
+            .HasDatabaseName("IX_transactions_inventoryentry_type");
+        
         base.OnModelCreating(modelBuilder);
     }
 }

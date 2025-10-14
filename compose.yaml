@@ -98,6 +98,8 @@
     container_name: masstransit-db-cs
     image: postgres:17.4-alpine3.21
     restart: always
+    volumes:
+      - masstransit_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -110,4 +112,5 @@
 #region Volumes
 volumes:
   db_data:
+  masstransit_data:
 #endregion
