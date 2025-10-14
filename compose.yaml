@@ -25,8 +25,8 @@
         
   csportfolio-web-app:
     build:
-      context: .   # subfolder is the build context
-      dockerfile: CSPortfolioWebApp/Dockerfile         # Dockerfile inside subfolder
+      context: ./CSPortfolioWebApp   # subfolder is the build context
+      dockerfile: Dockerfile         # Dockerfile inside subfolder
     container_name: csportfolio-web-app
     ports:
       - "4040:80"

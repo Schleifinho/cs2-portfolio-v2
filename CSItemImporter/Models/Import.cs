@@ -1,6 +1,6 @@
-﻿namespace CSItemImporter;
+﻿using System.Text.Json.Serialization;
 
-using System.Text.Json.Serialization;
+namespace CSItemImporter.Models;
 
 public class Root
 {

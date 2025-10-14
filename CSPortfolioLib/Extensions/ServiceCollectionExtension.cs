@@ -8,14 +8,28 @@ namespace CSPortfolioLib.Extensions;
 public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddApiRefitClient<T>(
-        this IServiceCollection services, string path) where T : class
+        this IServiceCollection services) where T : class
     {
         services.AddRefitClient<T>()
             .ConfigureHttpClient((sp, c) =>
             {
                 var settings = sp.GetRequiredService<IOptions<ApiSettings>>().Value;
-                c.BaseAddress = new Uri($"{settings.Url}:{settings.Port}/api/{path}");
-                c.Timeout = TimeSpan.FromSeconds(60); 
+                c.BaseAddress = new Uri(settings.Url);
+                c.Timeout = TimeSpan.FromSeconds(settings.Timeout); 
+            });
+        
+        return services;
+    }
+    
+    public static IServiceCollection AddSteamRefitClient<T>(
+        this IServiceCollection services) where T : class
+    {
+        services.AddRefitClient<T>()
+            .ConfigureHttpClient((sp, c) =>
+            {
+                var settings = sp.GetRequiredService<IOptions<ApiSettings>>().Value;
+                c.BaseAddress = new Uri(settings.SteamUrl);
+                c.Timeout = TimeSpan.FromSeconds(settings.Timeout); 
             });
         
         return services;

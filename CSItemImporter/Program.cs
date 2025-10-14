@@ -1,76 +1,36 @@
-﻿using System.Text.Json;
+﻿using CSItemImporter.Options;
+using CSItemImporter.Services;
 using CSPortfolioLib.Contracts.Controller;
-using CSPortfolioLib.DTOs.Item;
-using Microsoft.Extensions.Configuration;
-using Refit;
+using CSPortfolioLib.Extensions;
+using CSPortfolioLib.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CSItemImporter;
 
-public class Program
+public static class Program
 {
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory) // optional if running from bin folder
-            .AddJsonFile("./appsettings.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
+        var builder = Host.CreateApplicationBuilder(args);
+
+        // Bind ApiSettings from config
+        builder.Services.Configure<ApiSettings>(
+            builder.Configuration.GetSection(nameof(ApiSettings)));
         
-        // Folder path to search
-        string folderPath = @"./Input/current";
+        builder.Services.Configure<WorkerSettings>(
+            builder.Configuration.GetSection(nameof(WorkerSettings)));
 
-        string apiBaseUrl = config["ApiSettings:Url"];
-        string apiPort = config["ApiSettings:Port"];
-        
-        Console.WriteLine($"{apiBaseUrl}:{apiPort}/api");
-        var api = RestService.For<IItemApi>($"{apiBaseUrl}:{apiPort}/api");
-        
-        // Recursively get all .json files
-        var files = Directory.GetFiles(folderPath, "*.json", SearchOption.AllDirectories);
+        // Register Refit client using settings
+        builder.Services.AddApiRefitClient<IItemApi>();
 
-        foreach (var file in files)
-        {
-            try
-            {
-                string json = await File.ReadAllTextAsync(file);
+        // Register your custom services
+        builder.Services.AddScoped<ImportItemService>();
 
-                var root = JsonSerializer.Deserialize<Root>(json);
+        // Add background worker
+        builder.Services.AddHostedService<ImportWorker>();
 
-                if (root?.Results != null)
-                {
-                    foreach (var result in root.Results)
-                    {
-                        try
-                        {
-                            string name = result.Name;
-                            string marketHashName = result.AssetDescription?.MarketHashName;
-                            string iconUrl = result.AssetDescription?.IconUrl;
-
-                            var item = new ItemDto
-                            {
-                                Name = name,
-                                MarketHashName = marketHashName,
-                                IconUrl = iconUrl
-                            };
-
-                            Console.WriteLine($"Name: {name}");
-                            Console.WriteLine(new string('-', 50));
-
-                            await api.PostItemAsync(item);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {file}: {ex.Message}");
-            }
-        }
-
-        Console.WriteLine("Finished reading JSON files.");
+        var app = builder.Build();
+        await app.RunAsync();
     }
 }
