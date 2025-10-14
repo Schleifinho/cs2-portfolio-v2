@@ -23,8 +23,9 @@ public class ThrottledSteamMarketService(ILogger<ThrottledSteamMarketService> lo
                 if (result.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     logger.LogInformation($"Too Many RequestsGetMarketPriceAsync returned {result.StatusCode} ");
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                    Thread.Sleep(TimeSpan.FromMinutes(5));
                 }
+                await Task.Delay(_delay);
                 throw new Exception($"Error getting market price for {marketHashName}: {result}");
             }
 
