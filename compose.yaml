@@ -25,12 +25,15 @@
         
   csportfolio-web-app:
     build:
-      context: ./CSPortfolioWebApp   # subfolder is the build context
-      dockerfile: Dockerfile         # Dockerfile inside subfolder
+      context: .   # subfolder is the build context
+      dockerfile: CSPortfolioWebApp/Dockerfile         # Dockerfile inside subfolder
     container_name: csportfolio-web-app
     ports:
       - "4040:80"
-    #restart: unless-stopped
+    depends_on:
+      csportfolioapi:
+        condition: service_started
+        restart: true
 
   csitemimporter:
     image: csitemimporter
