@@ -65,21 +65,21 @@ export function Dashboard() {
               value={summary.totalItems}
               icon={Package}
               //trend="+2.5% from last month"
-              trendUp={true}
+              //trendUp={true}
           />
           <MetricCard
               title="Overall Value"
-              value={`${(summary.rawValue + summary.totalTrend).toLocaleString()}€`}
+              value={`${(summary.rawValue + summary.totalTrend).toFixed(2)}€`}
               icon={Euro}
-              trend={`+ ${(summary.totalTrend).toLocaleString()}€`}
-              trendUp={true}
+              trend={`+ ${(summary.totalTrend).toFixed(2)}€`}
+              trendUp={summary.totalTrend >= 0}
           />
           <MetricCard
               title="Unique Items"
               value={summary.totalUniqueItems}
               icon={Activity}
               //trend="tbd"
-              trendUp={true}
+              //trendUp={true}
           />
           <MetricCard
               title="Recent Transactions"
@@ -134,7 +134,7 @@ export function Dashboard() {
                                           : "bg-primary/10 text-primary border-primary/20"
                               }`}
                           >
-                            {entry.trend}€
+                            {entry.trend.toFixed(2)}€
                           </Badge>
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -189,7 +189,7 @@ export function Dashboard() {
                                           : "bg-primary/10 text-primary border-primary/20"
                               }`}
                           >
-                            {entry.trend}€
+                            {entry.trend.toFixed(2)}€
                           </Badge>
                         </p>
 
