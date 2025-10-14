@@ -93,6 +93,8 @@
     command: >
       bash -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management &&
       rabbitmq-server"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
 
   masstransit-db:
     container_name: masstransit-db-cs
@@ -113,4 +115,5 @@
 volumes:
   db_data:
   masstransit_data:
+  rabbitmq-data:
 #endregion
