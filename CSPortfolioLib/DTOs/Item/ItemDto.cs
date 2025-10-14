@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using CSPortfolioLib.Contracts.DTO;
 
 namespace CSPortfolioLib.DTOs.Item;

@@ -12,7 +12,7 @@ public class DashBoardRepository(CSDbContext context) : BaseRepository<Inventory
 
         var conv = startDate.UtcDateTime;
 
-        var result = await context.DashboardNumbers
+        var result = await Context.DashboardNumbers
             .FromSqlInterpolated($"SELECT * FROM get_dashboard_numbers({conv})")
             .AsNoTracking()
             .FirstOrDefaultAsync();

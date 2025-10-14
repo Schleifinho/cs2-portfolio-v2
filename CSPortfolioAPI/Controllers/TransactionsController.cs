@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using CSPortfolioAPI.Errors;
 using CSPortfolioAPI.Extensions;
 using CSPortfolioAPI.Repositories;
 using CSPortfolioLib.DTOs.Purchase;
 using CSPortfolioLib.DTOs.Sale;
-using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-using Refit;
 
 namespace CSPortfolioAPI.Controllers;
 
@@ -21,6 +18,7 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpGet("sales")]
     public async Task<ActionResult<List<SaleCompleteDto>>> GetSalesAsync(int? pageNumber, int? pageSize)
     {
+        logger.LogInformation($"Get Sales");
         var transactions = await repository.GetAllSalesAsync(pageNumber, pageSize);
         if (transactions.IsSuccess)
         {
@@ -32,6 +30,7 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPost("sale")]
     public async Task<ActionResult<SaleDto>> AddSaleAsync([FromBody] SaleDto saleDto)
     {
+        logger.LogInformation($"Add Sales");
         var response = await repository.AddSaleAsync(saleDto);
         if (response.IsSuccess)
         {
@@ -83,6 +82,7 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpGet("purchases")]
     public async Task<ActionResult<List<PurchaseCompleteDto>>> GetPurchasesAsync(int? pageNumber, int? pageSize)
     {
+        logger.LogInformation($"Get Purchases");
         var transactions = await repository.GetAllPurchasesAsync(pageNumber, pageSize);
         if (transactions.IsSuccess)
         {
@@ -94,6 +94,7 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPost("purchase")]
     public async Task<ActionResult<PurchaseDto>> AddPurchaseAsync([FromBody] PurchaseDto purchaseDto)
     {
+        logger.LogInformation($"Add Purchases");
         var response = await repository.AddPurchaseAsync(purchaseDto);
         if (response.IsSuccess)
         {

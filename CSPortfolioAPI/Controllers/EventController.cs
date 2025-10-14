@@ -13,8 +13,9 @@ public class EventController(ILogger<EventController> logger,
     InventoryEntryRepository inventoryEntryRepository) : ControllerBase, IEventApi
 {
     [HttpPost("priceupdate")]
-    public async Task<ActionResult<bool>> GetComplete([Body] PriceUpdateEvent priceUpdateEvent)
+    public async Task<ActionResult<bool>> SendPriceUpdateAsync([Body] PriceUpdateEvent priceUpdateEvent)
     {
+        logger.LogInformation("GetCompleteAsync");
         await updateEventProducer.PublishAsync(priceUpdateEvent);
         return true;
     }
@@ -22,6 +23,7 @@ public class EventController(ILogger<EventController> logger,
     [HttpGet("priceupdate/all")]
     public async Task<ActionResult<int>> PublishAllAsync()
     {
+        logger.LogInformation("PublishAllAsync");
         var entries = await inventoryEntryRepository.GetAllAsync(null, null);
         var events = entries.Select(x => new PriceUpdateEvent() { ItemId = x.ItemId, MarketHashName = x.Item.MarketHashName });
         var priceUpdateEvents = events.ToList();

@@ -1,5 +1,4 @@
 ﻿using CSPortfolioLib.DTOs.Steam;
-using FluentResults;
 using Refit;
 
 namespace CSPortfolioLib.Contracts.Steam;

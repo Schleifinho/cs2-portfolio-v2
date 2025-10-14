@@ -1,5 +1,4 @@
-﻿using CSPortfolioLib.Contracts.Controller;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace CSPriceUpdater.Services;
 
@@ -7,6 +6,7 @@ public class SteamPriceService(ILogger<SteamPriceService> logger, ThrottledSteam
 {
     public async Task<bool> ProcessPrices(string marketHashName, int itemId)
     {
+        logger.LogInformation($"Processing prices for {marketHashName}");
         return await steamMarketService.GetItemPriceAsync(730, itemId, marketHashName);
     }
 }

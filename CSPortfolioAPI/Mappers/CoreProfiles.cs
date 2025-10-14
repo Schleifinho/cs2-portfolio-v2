@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using CSPortfolioAPI.Models;
-using CSPortfolioAPI.Models.Views;
 using CSPortfolioLib.DTOs.Inventory;
 using CSPortfolioLib.DTOs.Item;
 using CSPortfolioLib.DTOs.PriceHistory;

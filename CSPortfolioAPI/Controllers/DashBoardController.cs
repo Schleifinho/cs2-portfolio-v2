@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using CSPortfolioAPI.Extensions;
-using CSPortfolioAPI.Models;
-using CSPortfolioAPI.Models.Views;
+﻿using CSPortfolioAPI.Extensions;
 using CSPortfolioAPI.Repositories;
 using CSPortfolioLib.DTOs.Inventory;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +14,7 @@ public class DashBoardController (ILogger<DashBoardController> logger, DashBoard
 
     public async Task<ActionResult<DashBoardNumbersDto>> GetDashBoardSummary([FromQuery] DateTimeOffset startDate)
     {
+        logger.LogInformation("GetDashBoardSummary");
         var result = await repository.GetDashBoardNumbers(startDate);
         return result.ToActionResult();
     }
