@@ -1,5 +1,6 @@
 ﻿using CSItemImporter.Options;
 using CSItemImporter.Services;
+using CSItemImporter.Worker;
 using CSPortfolioLib.Contracts.Controller;
 using CSPortfolioLib.Extensions;
 using CSPortfolioLib.Options;

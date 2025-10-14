@@ -1,5 +1,4 @@
-﻿using CSPortfolioLib.DTOs.Item;
-using CSPortfolioLib.DTOs.PriceHistory;
+﻿using CSPortfolioLib.DTOs.PriceHistory;
 using Refit;
 
 namespace CSPortfolioLib.Contracts.Controller;

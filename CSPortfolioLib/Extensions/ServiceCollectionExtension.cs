@@ -21,6 +21,20 @@ public static class ServiceCollectionExtension
         return services;
     }
     
+    public static IServiceCollection AddApiRefitClient<T>(
+        this IServiceCollection services, string path) where T : class
+    {
+        services.AddRefitClient<T>()
+            .ConfigureHttpClient((sp, c) =>
+            {
+                var settings = sp.GetRequiredService<IOptions<ApiSettings>>().Value;
+                c.BaseAddress = new Uri($"{settings.Url}/{path}");
+                c.Timeout = TimeSpan.FromSeconds(settings.Timeout); 
+            });
+        
+        return services;
+    }
+    
     public static IServiceCollection AddSteamRefitClient<T>(
         this IServiceCollection services) where T : class
     {

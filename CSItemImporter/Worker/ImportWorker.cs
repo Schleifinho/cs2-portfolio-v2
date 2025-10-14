@@ -1,10 +1,11 @@
 ﻿using CSItemImporter.Options;
+using CSItemImporter.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace CSItemImporter.Services;
+namespace CSItemImporter.Worker;
 
 public class ImportWorker(ILogger<ImportWorker> logger, 
     IServiceProvider serviceProvider, 
