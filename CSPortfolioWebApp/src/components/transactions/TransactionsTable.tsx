@@ -16,13 +16,14 @@ import { toast } from "@/hooks/use-toast";
 import { AddPurchaseDialog } from "@/components/transactions/AddPurchasesDialog";
 import { AddSaleDialog } from "@/components/transactions/AddSaleDialog";
 
-import { PurchaseFull } from "@/types/Purchase";
+import { PurchaseFull} from "@/types/Purchase";
 import { SaleFull } from "@/types/Sale";
 import SingleTransactionTable from "@/components/transactions/SingleTransactionTable";
 
 // 🔹 UI imports
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import {useTokenSearch} from "@/lib/searchbar.ts";
 
 export function TransactionsTable() {
   const queryClient = useQueryClient();
@@ -110,19 +111,9 @@ export function TransactionsTable() {
 
   // 🔹 Search
   const [search, setSearch] = useState("");
-  const filteredPurchases = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    return s
-        ? sortedPurchases.filter((p) => p.name.toLowerCase().includes(s))
-        : sortedPurchases;
-  }, [sortedPurchases, search]);
 
-  const filteredSales = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    return s
-        ? sortedSales.filter((sItem) => sItem.name.toLowerCase().includes(s))
-        : sortedSales;
-  }, [sortedSales, search]);
+  const filteredPurchases = useTokenSearch(sortedPurchases, search, (p) => p.name);
+  const filteredSales = useTokenSearch(sortedSales, search, (s) => s.name);
 
   // 🔹 Virtualization
   const purchaseParentRef = useRef<HTMLDivElement>(null);

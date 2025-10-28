@@ -27,6 +27,7 @@ import {PriceUpdateEvent} from "@/types/PriceHistory";
 import {Button} from "@/components/ui/button.tsx";
 import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
+import {useTokenSearch} from "@/lib/searchbar.ts";
 
 export function InventoryTable() {
     const queryClient = useQueryClient();
@@ -47,12 +48,7 @@ export function InventoryTable() {
     const [search, setSearch] = useState("");
 
     // --- Filter by search ---
-    const filteredEntries = useMemo(() => {
-        const s = search.trim().toLowerCase();
-        return (s
-            ? inventoryEntries.filter((e) => e.name?.toLowerCase().includes(s))
-            : inventoryEntries).filter(e => e.quantity > 0);
-    }, [inventoryEntries, search]);
+    const filteredEntries = useTokenSearch(inventoryEntries, search, (s) => s.name);
 
     // --- Sorting state ---
     type SortKey = "name" | "quantity" | "totalValue" | "currentPrice" | "trend" | null;

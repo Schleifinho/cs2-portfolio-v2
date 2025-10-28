@@ -24,6 +24,7 @@ import { Search, ArrowUpDown, Edit, Trash, ShoppingCart } from "lucide-react";
 import { AddItemDialog } from "@/components/items/AddItemsDialog";
 import { toast } from "@/hooks/use-toast";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
+import {useTokenSearch} from "@/lib/searchbar.ts";
 
 export function ItemsTable() {
   const queryClient = useQueryClient();
@@ -38,11 +39,7 @@ export function ItemsTable() {
   });
 
   const [search, setSearch] = useState("");
-
-  const filteredItems = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    return s ? items.filter((it) => it.name.toLowerCase().includes(s)) : items;
-  }, [items, search]);
+  const filteredItems = useTokenSearch(items, search, (s) => s.name);
 
   // Sorting
   type SortKey = "name" | null;
