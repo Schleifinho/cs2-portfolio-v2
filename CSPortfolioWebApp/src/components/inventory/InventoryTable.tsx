@@ -269,7 +269,7 @@ export function InventoryTable() {
                                                     variant="secondary"
                                                     className="bg-primary/10 text-primary border-primary/20"
                                                 >
-                                                    {entry.totalValue}€
+                                                    {entry.totalValue.toFixed(2)}€
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="font-medium text-foreground text-center">
@@ -277,7 +277,7 @@ export function InventoryTable() {
                                                     variant="secondary"
                                                     className="bg-primary/10 text-primary border-primary/20"
                                                 >
-                                                    {entry.currentPrice}€
+                                                    {entry.currentPrice.toFixed(2)}€
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="font-medium text-foreground text-center">
@@ -291,7 +291,7 @@ export function InventoryTable() {
                                                                 : "bg-primary/10 text-primary border-primary/20"
                                                     }`}
                                                 >
-                                                    {entry.trend}€
+                                                    {entry.trend.toFixed(2)}€
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
