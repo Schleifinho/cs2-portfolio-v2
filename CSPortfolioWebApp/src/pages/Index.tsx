@@ -17,8 +17,6 @@ const Index = () => {
         return <InventoryTable />;
       case "items":
         return <ItemsTable />;
-      case "prices":
-        return <PriceHistoryChart />;
       case "transactions":
         return <TransactionsTable />;
       default:

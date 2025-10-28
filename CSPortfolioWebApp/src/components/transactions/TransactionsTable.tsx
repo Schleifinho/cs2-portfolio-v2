@@ -202,7 +202,7 @@ export function TransactionsTable() {
           <TabsContent value="purchases" className="space-y-4">
             <SingleTransactionTable
                 title="Purchases"
-                data={sortedPurchases}
+                data={filteredPurchases}
                 loading={loadingPurchases}
                 error={errorPurchases}
                 parentRef={purchaseParentRef}
@@ -217,7 +217,7 @@ export function TransactionsTable() {
           <TabsContent value="sales" className="space-y-4">
             <SingleTransactionTable
                 title="Sales"
-                data={sortedSales}
+                data={filteredSales}
                 loading={loadingSales}
                 error={errorSales}
                 parentRef={saleParentRef}
