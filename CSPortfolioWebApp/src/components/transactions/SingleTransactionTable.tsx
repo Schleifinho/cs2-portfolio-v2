@@ -67,7 +67,9 @@ export default function SingleTransactionTable({
                                     <TableHead onClick={() => onSort("price")} className="cursor-pointer text-center">
                                         Price <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>
-                                    <TableHead className="text-center">Total</TableHead>
+                                    <TableHead onClick={() => onSort("total")} className="cursor-pointer text-center">
+                                        Total <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
+                                    </TableHead>
                                     <TableHead onClick={() => onSort("timestamp")} className="cursor-pointer text-center">
                                         Date <ArrowUpDown className="inline-block h-4 w-4 ml-1"/>
                                     </TableHead>

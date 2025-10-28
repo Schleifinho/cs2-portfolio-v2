@@ -60,7 +60,7 @@ export function TransactionsTable() {
   }, [activeTab]);
 
   // 🔹 Sort
-  type SortKey = "timestamp" | "price" | "quantity" | "name";
+  type SortKey = "timestamp" | "price" | "quantity" | "name" | "total";
   const [sortKey, setSortKey] = useState<SortKey>("timestamp");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -90,6 +90,9 @@ export function TransactionsTable() {
       } else if (sortKey === "name") {
         valA = a.name.toLowerCase();
         valB = b.name.toLowerCase();
+      } else if (sortKey === "total") {
+        valA = a.price * a.quantity;
+        valB = b.price * b.quantity;
       }
 
       if (typeof valA === "string" && typeof valB === "string") {
