@@ -48,7 +48,7 @@ export function InventoryTable() {
     const [search, setSearch] = useState("");
 
     // --- Filter by search ---
-    const filteredEntries = useTokenSearch(inventoryEntries, search, (s) => s.name);
+    const filteredEntries = useTokenSearch(inventoryEntries.filter(s => s.quantity > 0), search, (s) => s.name);
 
     // --- Sorting state ---
     type SortKey = "name" | "quantity" | "totalValue" | "currentPrice" | "trend" | null;
