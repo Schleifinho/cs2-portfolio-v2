@@ -20,8 +20,10 @@
         <PackageReference Include="Scrutor"/>
         <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="MassTransit.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
         <PackageReference Include="MassTransit.RabbitMQ"/>
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"/>
     </ItemGroup>
 
     <ItemGroup>

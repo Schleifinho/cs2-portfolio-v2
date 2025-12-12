@@ -1,6 +1,13 @@
-﻿using CSPortfolioAPI.Models;
+﻿using System.Text;
+using CSPortfolioAPI.Contracts;
+using CSPortfolioAPI.Models;
+using CSPortfolioAPI.Options;
 using CSPortfolioAPI.Repositories;
+using CSPortfolioAPI.Utils;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CSPortfolioAPI.Extensions;
 
@@ -35,7 +42,93 @@ public static class ServiceCollectionExtensions
             .AsImplementedInterfaces() // if they implement interfaces, register those too
             .WithScopedLifetime()
         );
+        
+        services.Scan(scan => scan
+            .FromAssemblyOf<BaseUserSecureRepository<IUserFK>>() // Adjust to point to correct assembly
+            .AddClasses(classes => classes
+                .AssignableTo(typeof(BaseUserSecureRepository<>)) // all classes derived from BaseRepository<>
+                .Where(c => !c.IsAbstract)) // exclude abstract classes (like BaseRepository itself)
+            .AsSelf() // register concrete classes as themselves (e.g. TournamentRepository)
+            .AsImplementedInterfaces() // if they implement interfaces, register those too
+            .WithScopedLifetime()
+        );
 
+        return services;
+    }
+    
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtOptions = configuration
+            .GetRequiredSection("Jwt")
+            .Get<JwtOptions>() ?? throw new InvalidOperationException("Jwt options missing");
+        
+        services.Configure<JwtOptions>(options =>
+        {
+            options.Issuer = jwtOptions.Issuer;
+            options.Audience = jwtOptions.Audience;
+            options.SecretKey = jwtOptions.SecretKey;
+        });
+        
+        services.AddScoped<JwtTokenHandler>();
+        
+        services.Configure<IdentityOptions>(options =>
+        {
+            // Password settings
+            options.Password.RequireDigit = false; // Require at least one digit
+            options.Password.RequireLowercase = true; // Require at least one lowercase letter
+            options.Password.RequireUppercase = false; // Require at least one uppercase letter
+            options.Password.RequireNonAlphanumeric = false; // Don't require special characters
+            options.Password.RequiredLength = 2; // Minimum password length
+            options.Password.RequiredUniqueChars = 1; // Minimum unique characters
+        });
+
+        services.AddIdentity<User, IdentityRole>()
+            .AddEntityFrameworkStores<CSDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidIssuer = jwtOptions.Issuer, // Set this in appsettings.json
+                ValidAudience = jwtOptions.Audience, // Set this in appsettings.json
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey)) 
+            };
+        });
+
+        services.AddAuthorization(options =>
+        {
+            // Define a policy named "DevAllowAll"
+            const string devAllowPolicy = "DevAllowAll";
+            options.AddPolicy(devAllowPolicy, policy =>
+            {
+                var env = services.BuildServiceProvider().GetRequiredService<IHostEnvironment>();
+                if (env.IsDevelopment())
+                {
+                    // Always succeed in dev
+                    //policy.RequireAuthenticatedUser();
+                    policy.RequireAssertion(_ => true);
+                }
+                else
+                {
+                    // Require authenticated user otherwise
+                    policy.RequireAuthenticatedUser();
+                }
+            });
+
+            // Make "DevAllowAll" the default policy so it's applied globally
+            options.DefaultPolicy = options.GetPolicy(devAllowPolicy)!;
+        });
+        
         return services;
     }
 }

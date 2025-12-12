@@ -1,5 +1,5 @@
-﻿drop function if exists get_dashboard_numbers(timestamptz);
-CREATE OR REPLACE FUNCTION get_dashboard_numbers(fromDate timestamptz)
+﻿drop function if exists get_dashboard_numbers;
+CREATE OR REPLACE FUNCTION get_dashboard_numbers(p_userid text, p_fromdate timestamptz)
 RETURNS TABLE (
     totalitems BIGINT,
     totaluniqueitems BIGINT,
@@ -17,11 +17,14 @@ BEGIN
             COALESCE(SUM(i.totalValue), 0)     AS rawValue,
             COALESCE(SUM(i.trend), 0) AS totalTrend
         FROM inventory_entry_view i
+        where 1=1
+        and i.userid = p_userid
     ), tx AS (
         -- 2️⃣ Transactions with filter applied dynamically
         SELECT count(*) AS recentTransactions
         FROM transactions t
-		where t."timestamp" > '2025-08-01'
+		where t."timestamp" > p_fromdate
+		and t.userid = p_userid
     )
     SELECT inv.totalitems, inv.totaluniqueitems, inv.rawValue, inv.totaltrend, tx.recentTransactions
     FROM inv CROSS JOIN tx;

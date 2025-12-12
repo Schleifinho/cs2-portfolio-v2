@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using CSPortfolioAPI.Extensions;
+using CSPortfolioAPI.Models;
 using CSPortfolioAPI.Repositories;
 using CSPortfolioLib.DTOs.Purchase;
 using CSPortfolioLib.DTOs.Sale;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CSPortfolioAPI.Controllers;
@@ -11,6 +13,7 @@ namespace CSPortfolioAPI.Controllers;
 [Route("api/[controller]")]
 public class TransactionsController (ILogger<TransactionsController> logger, 
     TransactionRepository repository,
+    UserManager<User> userManager,
     IMapper mapper)
     : ControllerBase
 {
@@ -18,8 +21,13 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpGet("sales")]
     public async Task<ActionResult<List<SaleCompleteDto>>> GetSalesAsync(int? pageNumber, int? pageSize)
     {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
         logger.LogInformation($"Get Sales");
-        var transactions = await repository.GetAllSalesAsync(pageNumber, pageSize);
+        var transactions = await repository.GetAllSalesAsync(userId, pageNumber, pageSize);
         if (transactions.IsSuccess)
         {
             return mapper.Map<List<SaleCompleteDto>>(transactions.Value);
@@ -30,8 +38,14 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPost("sale")]
     public async Task<ActionResult<SaleDto>> AddSaleAsync([FromBody] SaleDto saleDto)
     {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+
         logger.LogInformation($"Add Sales");
-        var response = await repository.AddSaleAsync(saleDto);
+        var response = await repository.AddSaleAsync(userId, saleDto);
         if (response.IsSuccess)
         {
             var dto = new SaleDto()
@@ -50,7 +64,13 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPut("sale/{id}")]
     public async Task<ActionResult<SaleDto>> UpdateSalesAsync([FromRoute]int id, [FromBody] SaleDto saleDto)
     {
-        var response = await repository.UpdateSaleAsync(id, saleDto);
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
+        var response = await repository.UpdateSaleAsync(id, userId, saleDto);
         if (response.IsSuccess)
         {
             var dto = new SaleDto
@@ -68,7 +88,13 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpDelete("sale/{id}")]
     public async Task<ActionResult> DeleteSaleAsync([FromRoute]int id)
     {
-        var response = await repository.DeleteSaleAsync(id);
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
+        var response = await repository.DeleteSaleAsync(userId, id);
         if (response.IsSuccess)
         {
             return Ok();
@@ -82,8 +108,14 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpGet("purchases")]
     public async Task<ActionResult<List<PurchaseCompleteDto>>> GetPurchasesAsync(int? pageNumber, int? pageSize)
     {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
         logger.LogInformation($"Get Purchases");
-        var transactions = await repository.GetAllPurchasesAsync(pageNumber, pageSize);
+        var transactions = await repository.GetAllPurchasesAsync(userId, pageNumber, pageSize);
         if (transactions.IsSuccess)
         {
             return mapper.Map<List<PurchaseCompleteDto>>(transactions.Value);
@@ -94,8 +126,14 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPost("purchase")]
     public async Task<ActionResult<PurchaseDto>> AddPurchaseAsync([FromBody] PurchaseDto purchaseDto)
     {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
         logger.LogInformation($"Add Purchases");
-        var response = await repository.AddPurchaseAsync(purchaseDto);
+        var response = await repository.AddPurchaseAsync(userId, purchaseDto);
         if (response.IsSuccess)
         {
             var dto = new PurchaseDto
@@ -113,7 +151,12 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpPut("purchase/{id}")]
     public async Task<ActionResult<PurchaseDto>> UpdatePurchaseAsync([FromRoute]int id, [FromBody] PurchaseDto purchaseDto)
     {
-        var response = await repository.UpdatePurchaseAsync(id, purchaseDto);
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        var response = await repository.UpdatePurchaseAsync(id, userId, purchaseDto);
         if (response.IsSuccess)
         {
             var dto = new PurchaseDto
@@ -131,7 +174,13 @@ public class TransactionsController (ILogger<TransactionsController> logger,
     [HttpDelete("purchase/{id}")]
     public async Task<ActionResult> DeletePurchaseAsync([FromRoute]int id)
     {
-        var response = await repository.DeletePurchaseAsync(id);
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
+        var response = await repository.DeletePurchaseAsync(userId, id);
         if (response.IsSuccess)
         {
             return Ok();

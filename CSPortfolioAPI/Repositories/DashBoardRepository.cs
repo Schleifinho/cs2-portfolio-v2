@@ -4,19 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CSPortfolioAPI.Repositories;
 
-public class DashBoardRepository(CSDbContext context) : BaseRepository<InventoryEntry>(context)
+public class DashBoardRepository(CSDbContext context) : BaseUserSecureRepository<InventoryEntry>(context)
 {
-    public async Task<Result<DashBoardNumbers>> GetDashBoardNumbers(DateTimeOffset startDate)
+    public async Task<Result<DashBoardNumbers>> GetDashBoardNumbers(string userid, DateTimeOffset startDate)
     {
         // Call the database function
-
         var conv = startDate.UtcDateTime;
 
         var result = await Context.DashboardNumbers
-            .FromSqlInterpolated($"SELECT * FROM get_dashboard_numbers({conv})")
+            .FromSqlInterpolated($"SELECT * FROM get_dashboard_numbers({userid}, {conv})")
             .AsNoTracking()
             .FirstOrDefaultAsync();
-        
 
         if (result == null)
         {

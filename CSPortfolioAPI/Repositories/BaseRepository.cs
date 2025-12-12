@@ -1,4 +1,5 @@
-﻿using CSPortfolioAPI.Models;
+﻿using CSPortfolioAPI.Contracts;
+using CSPortfolioAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSPortfolioAPI.Repositories;
@@ -12,11 +13,12 @@ public abstract class BaseRepository<TEntity>(CSDbContext context)
     public virtual async Task<IEnumerable<TEntity>> GetAllAsync(int? pageNumber, int? pageSize)
     {
         IQueryable<TEntity> query = DbSet;
-        if(pageNumber.HasValue && pageSize.HasValue)
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
             query = query
                 .Skip(pageSize.Value * pageNumber.Value)
                 .Take(pageSize.Value);
-        
+        }
         return await query.ToListAsync();
     }
     
