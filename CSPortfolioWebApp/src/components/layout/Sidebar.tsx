@@ -23,8 +23,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const loggedInMenuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "inventory", label: "Inventory", icon: Package },
-    { id: "items", label: "Items", icon: BarChart3 },
     { id: "transactions", label: "Transactions", icon: ShoppingCart },
+    { id: "items", label: "Catalog", icon: BarChart3 },
   ];
 
   return (

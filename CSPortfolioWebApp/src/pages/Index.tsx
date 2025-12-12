@@ -32,10 +32,10 @@ const Index = () => {
         return <Dashboard />;
       case "inventory":
         return <InventoryTable />;
-      case "items":
-        return <ItemsTable />;
       case "transactions":
         return <TransactionsTable />;
+      case "items":
+        return <ItemsTable />;
       case "login":
         return <Login onTabChange={setActiveTab} />;
       case "register":
