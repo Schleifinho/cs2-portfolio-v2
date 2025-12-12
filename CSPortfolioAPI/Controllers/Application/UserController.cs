@@ -25,7 +25,7 @@ public class UserController(
             return Unauthorized("User not authenticated.");
         }
         var user = await userManager.FindByIdAsync(userId);
-        return Ok(user);
+        return Ok(new UserDto(){Username = user.UserName, Email = user.Email});
     }
 
     [HttpPut("change-username")]

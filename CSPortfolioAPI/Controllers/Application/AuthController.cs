@@ -31,11 +31,20 @@ public class AuthController(
         };
 
         var result = await userManager.CreateAsync(user, dto.Password);
+        
+        var token = jwtTokenHandler.GenerateJwtTokenForUser(user);
+        Response.Cookies.Append("jwt", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(14)
+        });
 
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
-        return Ok(new { message = "User registered successfully" });
+        return Ok(new UserDto(){ Username = user.UserName, Email = user.Email });
     }
 
     // Login Endpoint
@@ -64,7 +73,7 @@ public class AuthController(
             Expires = DateTime.UtcNow.AddDays(14)
         });
 
-        return Ok(new { Message = "Successful logged in." });
+        return Ok(new UserDto(){ Username = user.UserName, Email = user.Email });
     }
     
     // This route doesn't really do anything to the JWT token itself
@@ -72,9 +81,15 @@ public class AuthController(
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        // Since JWT is stateless, the server doesn't need to handle anything
-        // The client simply removes the JWT token from localStorage or cookies
+        Response.Cookies.Append("jwt", "",
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddSeconds(-1)
+            });
 
-        return Ok(new { message = "Logged out successfully." });
+        return Ok(new { message = "Logged out successfully" });
     }
 }

@@ -19,6 +19,6 @@ public class UserRegisterDto
 
     public override string ToString()
     {
-        return $"Username: {Username}, Email: {Email}, Password: {Password}, ConfirmPassword: {ConfirmPassword}";
+        return $"Username: {Username}, Email: {Email}, Password: ****, ConfirmPassword: ****";
     }
 }
