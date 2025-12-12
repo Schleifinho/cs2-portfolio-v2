@@ -56,8 +56,15 @@ public class AuthController(
             return Unauthorized("Invalid credentials");
 
         var token = jwtTokenHandler.GenerateJwtTokenForUser(user);
+        Response.Cookies.Append("jwt", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(14)
+        });
 
-        return Ok(new { Token = token, User = user });
+        return Ok(new { Message = "Successful logged in." });
     }
     
     // This route doesn't really do anything to the JWT token itself

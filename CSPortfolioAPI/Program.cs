@@ -1,4 +1,5 @@
 using CSPortfolioAPI.Extensions;
+using CSPortfolioAPI.Middlewares;
 using CSPortfolioAPI.Models;
 using CSPortfolioLib.Producers;
 using MessageBrokerLib.Extensions;
@@ -62,11 +63,12 @@ builder.Services.AddIdentityServices(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSwagger",
+    options.AddPolicy("AllowFrontend",
         policy => policy
-            .AllowAnyOrigin()    // or restrict to the UI origin
+            .WithOrigins("http://localhost:4040")
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -79,11 +81,12 @@ Console.WriteLine($"Running {app.Environment.EnvironmentName}");
 
 #endregion
 
-app.UseCors("AllowSwagger");
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 // Make sure we don't have cookie authentication enabled by accident
 app.UseRouting();
+app.UseMiddleware<JwtCookieMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
