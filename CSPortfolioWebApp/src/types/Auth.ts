@@ -14,4 +14,12 @@ export interface UserLoginDto {
 export interface UserDto {
     username: string;
     email: string;
+    profileImageUrl: string;
+    emailConfirmed: boolean;
+}
+
+export interface ChangePasswordRequestDto {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }

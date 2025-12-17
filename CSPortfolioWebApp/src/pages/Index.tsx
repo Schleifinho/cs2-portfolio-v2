@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Login } from "@/components/auth/Login";
 import { Register } from "@/components/auth/Register";
 import { Welcome } from "@/pages/Welcome";
+import {Profile} from "@/components/profile/profile.tsx";
 
 const Index = () => {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ const Index = () => {
         return <TransactionsTable />;
       case "items":
         return <ItemsTable />;
+      case "profile":
+        return <Profile />;
       case "login":
         return <Login onTabChange={setActiveTab} />;
       case "register":

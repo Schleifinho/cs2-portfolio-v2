@@ -18,6 +18,7 @@
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
         <PackageReference Include="Scrutor"/>
+        <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="MassTransit.EntityFrameworkCore"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>

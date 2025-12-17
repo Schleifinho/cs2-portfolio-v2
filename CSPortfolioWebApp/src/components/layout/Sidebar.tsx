@@ -60,58 +60,72 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               })}
         </nav>
 
-        {/* FOOTER SECTION (AUTH AREA) */}
-        <div className="border-t p-4 mt-auto flex flex-col gap-3">
-          {user ? (
-              <>
-                {/* PROFILE SECTION */}
-                <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
-                  <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                    {user.username?.[0]?.toUpperCase()}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{user.username}</span>
-                    <span className="text-xs text-muted-foreground">
-                  Logged in
-                </span>
-                  </div>
-                </div>
+          {/* FOOTER SECTION (AUTH AREA) */}
+          <div className="border-t p-4 mt-auto flex flex-col gap-3">
+              {user ? (
+                  <>
+                      {/* PROFILE CARD (CLICKABLE) */}
+                      <button
+                          onClick={() => onTabChange("profile")}
+                          className={cn(
+                              "flex w-full items-center gap-3 p-2 rounded-lg text-left transition-colors",
+                              activeTab === "profile"
+                                  ? "bg-primary text-primary-foreground shadow-primary"
+                                  : "bg-secondary hover:bg-secondary/80"
+                          )}
+                      >
+                        <img src={`${import.meta.env.VITE_BACKEND_URL}${user.profileImageUrl}?v=${Date.now()}`}
+                             alt={user.username?.[0]?.toUpperCase()}
+                             className="h-10 w-10 rounded-full object-cover"/>
 
-                {/* LOGOUT BUTTON */}
-                <Button
-                    variant="destructive"
-                    className="w-full justify-start gap-3"
-                    onClick={() => logout()}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
-              </>
-          ) : (
-              <>
-                {/* LOGIN BUTTON */}
-                <Button
-                    variant={activeTab === "login" ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
-                    onClick={() => onTabChange("login")}
-                >
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Button>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{user.username}</span>
+                          <span
+                              className={cn(
+                                      "text-xs",
+                                      activeTab === "profile"
+                                          ? "text-primary-foreground/80"
+                                          : "text-muted-foreground"
+                                  )}
+                              > View profile
+                            </span>
+                          </div>
+                      </button>
 
-                {/* REGISTER BUTTON */}
-                <Button
-                    variant={activeTab === "register" ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
-                    onClick={() => onTabChange("register")}
-                >
-                  <User className="h-4 w-4" />
-                  Register
-                </Button>
-              </>
-          )}
-        </div>
+                      {/* LOGOUT */}
+                      <Button
+                          variant="destructive"
+                          className="w-full justify-start gap-3"
+                          onClick={() => logout()}
+                      >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                      </Button>
+                  </>
+              ) : (
+                  <>
+                      {/* LOGIN */}
+                      <Button
+                          variant={activeTab === "login" ? "default" : "ghost"}
+                          className="w-full justify-start gap-3"
+                          onClick={() => onTabChange("login")}
+                      >
+                          <LogIn className="h-4 w-4" />
+                          Login
+                      </Button>
+
+                      {/* REGISTER */}
+                      <Button
+                          variant={activeTab === "register" ? "default" : "ghost"}
+                          className="w-full justify-start gap-3"
+                          onClick={() => onTabChange("register")}
+                      >
+                          <User className="h-4 w-4" />
+                          Register
+                      </Button>
+                  </>
+              )}
+          </div>
       </div>
   );
 }

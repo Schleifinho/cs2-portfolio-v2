@@ -75,12 +75,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddRabbitMQProducer(builder.Configuration, 
     cfg => cfg.AddScoped<PriceUpdateEventProducer>());
+builder.WebHost.UseWebRoot("wwwroot");
 
 #region Run APP
 var app = builder.Build();
 Console.WriteLine($"Running {app.Environment.EnvironmentName}");
 
 #endregion
+
+app.UseStaticFiles();
 
 app.UseCors("AllowFrontend");
 

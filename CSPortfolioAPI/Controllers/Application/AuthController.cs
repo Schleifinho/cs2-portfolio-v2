@@ -44,7 +44,7 @@ public class AuthController(
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
-        return Ok(new UserDto(){ Username = user.UserName, Email = user.Email });
+        return Ok(user.ToDto());
     }
 
     // Login Endpoint
@@ -72,8 +72,7 @@ public class AuthController(
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(14)
         });
-
-        return Ok(new UserDto(){ Username = user.UserName, Email = user.Email });
+        return Ok(user.ToDto());
     }
     
     // This route doesn't really do anything to the JWT token itself

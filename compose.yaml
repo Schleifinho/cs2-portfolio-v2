@@ -16,6 +16,14 @@
       REDIS_PORT: 6379
       ConnectionStrings__DefaultConnection: Host=cs-db;Port=5432;Database=csportfolio;Username=csapi;Password=secretpass
       MassTransitConnectionStrings__DefaultConnection: Host=masstransit-db;Port=5432;Database=masstransit;Username=root;Password=root
+    volumes:
+      - profile-images:/app/wwwroot/uploads
+    user: root
+    command: >
+        sh -c "
+        chown -R ${APP_UID}:${APP_UID} /app/wwwroot/uploads &&
+        exec dotnet CSPortfolioAPI.dll
+        "
     depends_on:
       cs-db:
         condition: service_healthy
@@ -116,4 +124,5 @@ volumes:
   db_data:
   masstransit_data:
   rabbitmq-data:
+  profile-images:
 #endregion

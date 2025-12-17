@@ -4,6 +4,12 @@ using CSPortfolioLib.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace CSPortfolioAPI.Controllers.Application;
 
@@ -13,9 +19,13 @@ namespace CSPortfolioAPI.Controllers.Application;
 public class UserController(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
+    IWebHostEnvironment webHostEnvironment,
     ILogger<UserController> logger)
     : ControllerBase
 {
+    private const long MaxFileSize = 2 * 1024 * 1024; // 2 MB
+    private const int ImageSize = 256;
+    
     [HttpGet("profile")]
     public async Task<IActionResult> GetUser()
     {
@@ -25,7 +35,11 @@ public class UserController(
             return Unauthorized("User not authenticated.");
         }
         var user = await userManager.FindByIdAsync(userId);
-        return Ok(new UserDto(){Username = user.UserName, Email = user.Email});
+        if (user == null)
+        {
+            return Unauthorized("User not authenticated.");
+        }
+        return Ok(user.ToDto());
     }
 
     [HttpPut("change-username")]
@@ -70,21 +84,16 @@ public class UserController(
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
     {
-        logger.LogInformation($"Changed password");
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the user ID from the JWT claim
-
+        var userId = userManager.GetUserId(User);
         if (userId == null)
         {
             return Unauthorized("User not authenticated.");
         }
-
-        var user = await userManager.FindByIdAsync(userId); // Find the user by their ID
-
+        var user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return NotFound("User not found.");
+            return Unauthorized("User not authenticated.");
         }
-
         // Verify current password
         var passwordValid = await userManager.CheckPasswordAsync(user, model.CurrentPassword);
         if (!passwordValid)
@@ -104,5 +113,51 @@ public class UserController(
         }
 
         return BadRequest("Failed to change password.");
+    }
+    
+    [HttpPost("avatar")]
+    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        if (file.Length > MaxFileSize)
+            return BadRequest("File size exceeds 2MB.");
+
+        if (!file.ContentType.StartsWith("image/"))
+            return BadRequest("Invalid file type.");
+
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized();
+
+        var webRoot = string.IsNullOrEmpty(webHostEnvironment.WebRootPath) == false 
+                ? webHostEnvironment.WebRootPath 
+                : Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        var profilePath = Path.Combine(webRoot, "uploads", "profile");
+        Directory.CreateDirectory(profilePath);
+        var filePath = Path.Combine(profilePath, $"{user.Id}.jpg");
+
+        // Resize + crop to 256x256
+        using var image = await Image.LoadAsync(file.OpenReadStream());
+        image.Mutate(x =>
+            x.Resize(new ResizeOptions
+            {
+                Size = new Size(ImageSize, ImageSize),
+                Mode = ResizeMode.Crop
+            })
+        );
+
+        await image.SaveAsync(
+            filePath,
+            new JpegEncoder { Quality = 90 }
+        );
+
+        // Update user (UPSERT)
+        user.ProfileImageUrl = $"/uploads/profile/{user.Id}.jpg";
+        await userManager.UpdateAsync(user);
+
+        return Ok(user.ToDto());
     }
 }
