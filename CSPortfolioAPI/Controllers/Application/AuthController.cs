@@ -1,4 +1,5 @@
 ﻿using CSPortfolioAPI.Models;
+using CSPortfolioAPI.Services;
 using CSPortfolioAPI.Utils;
 using CSPortfolioLib.DTOs.User;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +13,8 @@ public class AuthController(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
     JwtTokenHandler jwtTokenHandler,
+    EmailVerificationService emailService,
+    JwtTokenHandler tokenService,
     ILogger<AuthController> logger)
     : ControllerBase
 {
@@ -43,7 +46,9 @@ public class AuthController(
 
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
-
+        
+        var emailToken = tokenService.GenerateEmailVerificationToken(user.Id);
+        await emailService.SendVerificationEmailAsync(user, emailToken);
         return Ok(user.ToDto());
     }
 

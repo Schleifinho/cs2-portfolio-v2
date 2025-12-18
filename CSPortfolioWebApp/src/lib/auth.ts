@@ -30,4 +30,14 @@ export const authApi = {
     changePassword: async (data: ChangePasswordRequestDto) => {
         await api.post("/user/change-password", data);
     },
+
+    sendConfirmationEmail: async () => {
+        await api.post("/emailverification/verify/send");
+    },
+
+    sendConfirmationToken: async (token: string) => {
+        await api.post("/emailverification/verify/confirm", null, {
+            params: { token },
+        });
+    },
 };

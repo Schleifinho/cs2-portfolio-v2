@@ -17,7 +17,7 @@
       ConnectionStrings__DefaultConnection: Host=cs-db;Port=5432;Database=csportfolio;Username=csapi;Password=secretpass
       MassTransitConnectionStrings__DefaultConnection: Host=masstransit-db;Port=5432;Database=masstransit;Username=root;Password=root
     volumes:
-      - profile-images:/app/wwwroot/uploads
+      - ./CSPortfolioAPI/wwwroot/uploads:/app/wwwroot/uploads
     user: root
     command: >
         sh -c "

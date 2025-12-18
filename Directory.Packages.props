@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="brevo_csharp" Version="1.1.1" />
     <PackageVersion Include="EFCore.NamingConventions" Version="9.0.0" />
     <PackageVersion Include="FluentResults" Version="4.0.0" />
     <PackageVersion Include="MessageBrokerLib" Version="0.0.2" />

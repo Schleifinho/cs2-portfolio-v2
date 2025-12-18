@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="brevo_csharp" />
         <PackageReference Include="EFCore.NamingConventions" />
         <PackageReference Include="FluentResults" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>

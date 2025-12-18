@@ -1,6 +1,11 @@
+using brevo_csharp.Api;
+using brevo_csharp.Client;
+using CSPortfolioAPI.Contracts;
 using CSPortfolioAPI.Extensions;
 using CSPortfolioAPI.Middlewares;
 using CSPortfolioAPI.Models;
+using CSPortfolioAPI.Options;
+using CSPortfolioAPI.Services;
 using CSPortfolioLib.Producers;
 using MessageBrokerLib.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -76,6 +81,22 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddRabbitMQProducer(builder.Configuration, 
     cfg => cfg.AddScoped<PriceUpdateEventProducer>());
 builder.WebHost.UseWebRoot("wwwroot");
+
+var brevoOptions = builder.Configuration
+    .GetRequiredSection("Brevo")
+    .Get<BrevoOptions>() ?? throw new InvalidOperationException("Brevo options missing");
+        
+builder.Services.Configure<BrevoOptions>(options =>
+{
+    options.ApiKey = brevoOptions.ApiKey;
+    options.ApiBaseUrl = brevoOptions.ApiBaseUrl;
+    options.SenderName = brevoOptions.SenderName;
+    options.SenderEmail = brevoOptions.SenderEmail;
+});
+
+builder.Services.AddScoped<ITransactionalEmailsApi, TransactionalEmailsApi>();
+builder.Services.AddScoped<IEmailService, BrevoEmailService>();
+builder.Services.AddScoped<EmailVerificationService>();
 
 #region Run APP
 var app = builder.Build();

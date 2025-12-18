@@ -4,11 +4,14 @@ import {UserLoginDto, UserRegisterDto, UserDto, ChangePasswordRequestDto} from "
 
 interface AuthContextType {
     user: UserDto | null;
+    refreshUser: () => Promise<void>;
     login: (data: UserLoginDto) => Promise<void>;
     register: (data: UserRegisterDto) => Promise<void>;
     logout: () => Promise<void>;
     uploadAvatar: (file: File) => Promise<void>;
     changePassword: (dto: ChangePasswordRequestDto) => Promise<void>;
+    resendVerificationEmail: () => Promise<void>;
+    confirmEmailVerification: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +31,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         fetchUser();
     }, []);
+
+    const refreshUser = async () => {
+        await fetchUser();
+    };
 
     const login = async (data: UserLoginDto) => {
         await authApi.login(data);
@@ -56,8 +63,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await authApi.changePassword(dto);
     };
 
+    const resendVerificationEmail = async () => {
+        await authApi.sendConfirmationEmail();
+    }
+
+    const confirmEmailVerification = async (token: string) => {
+        await authApi.sendConfirmationToken(token);
+    }
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, uploadAvatar, changePassword }}>
+        <AuthContext.Provider value={{ user, refreshUser, login, register, logout, uploadAvatar, changePassword, confirmEmailVerification, resendVerificationEmail }}>
             {children}
         </AuthContext.Provider>
     );

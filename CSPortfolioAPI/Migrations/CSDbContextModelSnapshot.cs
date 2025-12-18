@@ -258,6 +258,7 @@ namespace CSPortfolioAPI.Migrations
                         .HasName("pk_aspnetusers");
 
                     b.HasIndex("NormalizedEmail")
+                        .IsUnique()
                         .HasDatabaseName("EmailIndex");
 
                     b.HasIndex("NormalizedUserName")

@@ -15,7 +15,7 @@ export interface UserDto {
     username: string;
     email: string;
     profileImageUrl: string;
-    emailConfirmed: boolean;
+    confirmedEmail: boolean;
 }
 
 export interface ChangePasswordRequestDto {
