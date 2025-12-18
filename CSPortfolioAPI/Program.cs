@@ -21,6 +21,13 @@ builder.Services.AddOpenApi();
 // Add controller support
 builder.Services.AddSwaggerGen(options =>
 {
+    // This loads configuration in this order:
+    builder.Configuration
+        .SetBasePath(builder.Environment.ContentRootPath)
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables();
+    
     // Advertise the externally reachable host:port
     options.AddServer(new OpenApiServer
     {
