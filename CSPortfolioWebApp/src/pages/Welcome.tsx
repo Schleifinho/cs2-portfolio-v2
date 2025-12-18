@@ -8,7 +8,7 @@ export const Welcome = ({ onTabChange }: WelcomeProps) => {
             <div className="animate-fadeIn w-full max-w-xl text-center space-y-6">
 
                 <h1 className="text-5xl font-bold tracking-tight text-primary">
-                    Welcome to Inventory Pro
+                    Welcome to CS2 Inventory Pro
                 </h1>
 
                 <p className="text-muted-foreground text-lg max-w-md mx-auto">

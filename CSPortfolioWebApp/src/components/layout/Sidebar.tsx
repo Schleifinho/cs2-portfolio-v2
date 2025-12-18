@@ -32,7 +32,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         {/* HEADER */}
         <div className="flex h-16 items-center justify-center border-b bg-gradient-primary">
           <h1 className="text-xl font-bold text-primary-foreground">
-            Inventory Pro
+            CS2 Inventory Pro
           </h1>
         </div>
 
