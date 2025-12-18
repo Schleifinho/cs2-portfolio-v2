@@ -1,6 +1,7 @@
 ﻿import { createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "@/lib/auth";
 import {UserLoginDto, UserRegisterDto, UserDto, ChangePasswordRequestDto} from "@/types/Auth";
+import {useQueryClient} from "@tanstack/react-query";
 
 interface AuthContextType {
     user: UserDto | null;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<UserDto | null>(null);
+    const queryClient = useQueryClient();
 
     const fetchUser = async () => {
         try {
@@ -49,6 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = async () => {
         await authApi.logout();
         setUser(null);
+        queryClient.clear();
     };
 
     const uploadAvatar = async (file: File) => {

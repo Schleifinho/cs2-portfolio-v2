@@ -71,7 +71,7 @@ export function Dashboard() {
               title="Overall Value"
               value={`${(summary.rawValue + summary.totalTrend).toFixed(2)}€`}
               icon={Euro}
-              trend={`+ ${(summary.totalTrend).toFixed(2)}€`}
+              trend={`${summary.totalTrend > 0 ? '+' : ''} ${summary.totalTrend.toFixed(2)}€`}
               trendUp={summary.totalTrend >= 0}
           />
           <MetricCard

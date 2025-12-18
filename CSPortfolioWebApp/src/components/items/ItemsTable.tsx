@@ -25,12 +25,14 @@ import { AddItemDialog } from "@/components/items/AddItemsDialog";
 import { toast } from "@/hooks/use-toast";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
 import {useTokenSearch} from "@/lib/searchbar.ts";
+import {useAuth} from "@/lib/AuthContext.tsx";
 
 export function ItemsTable() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: items = [], isLoading, isError, error } = useQuery<Item[]>({
-    queryKey: ["items"],
+    queryKey: ["items", user?.username],
     queryFn: getItems,
     select: (data) =>
         [...data].sort((a, b) => (a.name || "").localeCompare(b.name || "")),

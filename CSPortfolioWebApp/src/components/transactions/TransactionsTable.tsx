@@ -24,9 +24,11 @@ import SingleTransactionTable from "@/components/transactions/SingleTransactionT
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import {useTokenSearch} from "@/lib/searchbar.ts";
+import {useAuth} from "@/lib/AuthContext.tsx";
 
 export function TransactionsTable() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // 🔹 Queries
   const {
@@ -34,7 +36,7 @@ export function TransactionsTable() {
     isLoading: loadingPurchases,
     isError: errorPurchases,
   } = useQuery<PurchaseFull[]>({
-    queryKey: ["purchases"],
+    queryKey: ["purchases", user?.username],
     queryFn: getPurchases,
     staleTime: 5 * 60 * 1000,
   });
@@ -44,7 +46,7 @@ export function TransactionsTable() {
     isLoading: loadingSales,
     isError: errorSales,
   } = useQuery<SaleFull[]>({
-    queryKey: ["sales"],
+    queryKey: ["sales", user?.username],
     queryFn: getSales,
     staleTime: 5 * 60 * 1000,
   });

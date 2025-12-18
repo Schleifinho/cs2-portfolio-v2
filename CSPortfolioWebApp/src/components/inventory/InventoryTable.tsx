@@ -28,12 +28,14 @@ import {Button} from "@/components/ui/button.tsx";
 import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
 import {useTokenSearch} from "@/lib/searchbar.ts";
+import {useAuth} from "@/lib/AuthContext.tsx";
 
 export function InventoryTable() {
     const queryClient = useQueryClient();
+    const { user } = useAuth();
     const {data: inventoryEntries = [], isLoading, isError, error} =
         useQuery<InventoryEntry[]>({
-            queryKey: ["inventoryEntries"],
+            queryKey: ["inventoryEntries", user?.username],
             queryFn: getInventoryEntries,
             select: (data) =>
                 [...data].sort((a, b) => (b.trend ?? 0) - (a.trend ?? 0)),
