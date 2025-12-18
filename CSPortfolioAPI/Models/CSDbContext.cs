@@ -14,6 +14,18 @@ public class CSDbContext(DbContextOptions<CSDbContext> options) : IdentityDbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Unique index on NormalizedUserName
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.NormalizedUserName)
+            .IsUnique()
+            .HasDatabaseName("UX_User_NormalizedUserName");
+
+        // Unique index on NormalizedEmail
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.NormalizedEmail)
+            .IsUnique()
+            .HasDatabaseName("UX_User_NormalizedEmail");
+        
         modelBuilder.Entity<Item>()
             .HasIndex(i => i.MarketHashName)
             .IsUnique();
