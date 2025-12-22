@@ -106,7 +106,7 @@ public abstract class BaseUserSecureController<TDto, TEntity>(
     }
     
     [HttpPut]
-    public virtual async Task<ActionResult<TDto>> UpdateTournament([FromBody] TDto dto)
+    public virtual async Task<ActionResult<TDto>> UpdateAsync([FromBody] TDto dto)
     {
         var userId = userManager.GetUserId(User);
         if (userId is null)

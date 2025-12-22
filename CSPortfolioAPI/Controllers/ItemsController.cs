@@ -17,4 +17,11 @@ public class ItemsController(ILogger<ItemsController> logger, ItemRepository rep
     {
         return await repository.GetTotalCount();
     }
+
+    [HttpGet("noicon")]
+    public async Task<ActionResult<List<ItemDto>>> GetItemWithoutIconAsync()
+    {
+        var items = await repository.GetIconLess();
+        return Ok(mapper.Map<List<ItemDto>>(items));
+    }
 }
