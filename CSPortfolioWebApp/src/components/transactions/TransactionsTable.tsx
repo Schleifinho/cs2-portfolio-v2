@@ -1,4 +1,4 @@
-import {useState, useMemo, useRef, useEffect} from "react";
+import React, {useState, useMemo, useRef, useEffect} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -22,13 +22,17 @@ import SingleTransactionTable from "@/components/transactions/SingleTransactionT
 
 // 🔹 UI imports
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import {Search, Upload} from "lucide-react";
 import {useTokenSearch} from "@/lib/searchbar.ts";
 import {useAuth} from "@/lib/AuthContext.tsx";
+import {ImportTransactionsDialog} from "@/components/transactions/ImportTransactionsDialog.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 export function TransactionsTable() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   // 🔹 Queries
   const {
@@ -175,20 +179,32 @@ export function TransactionsTable() {
             Transactions
           </h2>
 
-          <div className="relative flex-1 max-w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-                type="text"
-                placeholder="Search by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 w-full"
-            />
+          <div className="flex items-center gap-3 flex-1 max-w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"/>
+              <Input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 w-full"
+              />
+            </div>
+
+            <Button
+                variant="outline"
+                className="gap-2 whitespace-nowrap"
+                onClick={() => setImportOpen(true)}
+            >
+              <Upload className="h-4 w-4"/>
+              Import CSV
+            </Button>
           </div>
         </div>
 
         {/* 🔹 Tabs */}
-        <Tabs defaultValue="purchases" className="w-full" onValueChange={(val) => setActiveTab(val as "purchases" | "sales")}>
+        <Tabs defaultValue="purchases" className="w-full"
+              onValueChange={(val) => setActiveTab(val as "purchases" | "sales")}>
           <TabsList className="grid grid-cols-2 w-full bg-secondary">
             <TabsTrigger value="purchases">Purchases</TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
@@ -242,6 +258,11 @@ export function TransactionsTable() {
                 itemId={editingSale.itemId}
             />
         )}
+
+        <ImportTransactionsDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+        />
       </div>
   );
 }

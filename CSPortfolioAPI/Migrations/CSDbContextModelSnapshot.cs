@@ -275,7 +275,6 @@ namespace CSPortfolioAPI.Migrations
                         .HasColumnName("currentprice");
 
                     b.Property<string>("IconUrl")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("iconurl");
 

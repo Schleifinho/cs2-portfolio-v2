@@ -47,7 +47,7 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
             client.DefaultRequestHeaders.UserAgent.ParseAdd(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-            foreach (var item in asd.Content.OrderByDescending(x => x.Id).Skip(33))
+            foreach (var item in asd.Content.OrderByDescending(x => x.Id).Skip(141))
             {
                 string name = item.Name;
                 string url = $"https://steamcommunity.com/market/search?q={name}";
@@ -82,7 +82,7 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
                     logger.LogError($"Failed to find {name}");
                 }
 
-                Thread.Sleep(30000);
+                Thread.Sleep(20000);
             }
         }
         else
