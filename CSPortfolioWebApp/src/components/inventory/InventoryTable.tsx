@@ -28,12 +28,15 @@ import {Button} from "@/components/ui/button.tsx";
 import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
 import {useTokenSearch} from "@/lib/searchbar.ts";
+import {useAuth} from "@/lib/AuthContext.tsx";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 export function InventoryTable() {
     const queryClient = useQueryClient();
+    const { user } = useAuth();
     const {data: inventoryEntries = [], isLoading, isError, error} =
         useQuery<InventoryEntry[]>({
-            queryKey: ["inventoryEntries"],
+            queryKey: ["inventoryEntries", user?.username],
             queryFn: getInventoryEntries,
             select: (data) =>
                 [...data].sort((a, b) => (b.trend ?? 0) - (a.trend ?? 0)),
@@ -111,7 +114,7 @@ export function InventoryTable() {
         count: sortedEntries.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 110,
-        overscan: 10,
+        overscan: 25,
     });
 
     const [saleDialogOpen, setSaleDialogOpen] = useState(false);
@@ -155,6 +158,15 @@ export function InventoryTable() {
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-9 w-full"
                     />
+                    {/* Clear Button */}
+                    {search && (
+                        <button
+                            onClick={() => setSearch("")}
+                            className="absolute right-2 top-2.5 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
 
                 {/* Button - takes only necessary space */}
@@ -162,9 +174,18 @@ export function InventoryTable() {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    onClick={async () => await handlePriceRefreshAll()}
+                >
+                    <RefreshCcw className="h-4 w-4"/> Price Refresh
+                </Button>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
                     onClick={() => queryClient.invalidateQueries({queryKey: ["inventoryEntries"]})}
                 >
-                    <RefreshCcw className="h-4 w-4"/>
+                    <RefreshCcw className="h-4 w-4"/> View Refresh
                 </Button>
             </div>
 
@@ -175,63 +196,56 @@ export function InventoryTable() {
                             <div>
                                 Current Inventory ({sortedEntries.length})
                             </div>
-                            <div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center gap-1"
-                                    onClick={async () => await handlePriceRefreshAll()}
-                                >
-                                    <RefreshCcw className="h-4 w-4"/> Price Refresh
-                                </Button>
-                            </div>
                         </div>
-
-
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div ref={parentRef} className="relative w-full overflow-auto no-scrollbar"
-                         style={{height: `calc(100vh - 275px)`}}>
+                <CardContent className="p-0">
+                    {/* 🔹 STATIC HEADER */}
+                    <Table className="table-fixed border-collapse">
+                        <TableHeader>
+                            <TableRow className="border-border">
+                                <TableHead
+                                    onClick={() => handleSort("name")}
+                                    className="cursor-pointer select-none text-muted-foreground w-5/10"
+                                >
+                                    Item <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("quantity")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("totalValue")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Total Value
+                                    ({sortedEntries.reduce((sum, item) => sum + item.totalValue, 0).toFixed(2)}€)
+                                    <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("currentPrice")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("trend")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10">
+                                    Trend ({sortedEntries.reduce((sum, item) => sum + item.trend, 0).toFixed(2)}€)
+                                    <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead className="w-1/10 text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                    </Table>
+                    <ScrollArea
+                        ref={parentRef}
+                        className="relative w-full"
+                        style={{ height: `calc(100vh - 300px)` }}
+                    >
                         <Table className="table-fixed border-collapse">
-                            <TableHeader>
-                                <TableRow className="border-border">
-                                    <TableHead
-                                        onClick={() => handleSort("name")}
-                                        className="cursor-pointer select-none text-muted-foreground w-5/10"
-                                    >
-                                        Item <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("quantity")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("totalValue")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Total Value
-                                        ({sortedEntries.reduce((sum, item) => sum + item.totalValue, 0).toFixed(2)}€)
-                                        <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("currentPrice")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("trend")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10">
-                                        Trend ({sortedEntries.reduce((sum, item) => sum + item.trend, 0).toFixed(2)}€)
-                                        <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead className="w-1/10 text-center">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-
                             <TableBody>
                                 {/* Spacer at the top */}
                                 <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
@@ -248,6 +262,13 @@ export function InventoryTable() {
                                                 {entry.iconUrl && (
                                                     <img
                                                         src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
+                                                        alt={entry.name}
+                                                        className="h-20 w-20 rounded object-contain border border-border"
+                                                    />
+                                                )}
+                                                {!entry.iconUrl && (
+                                                    <img
+                                                        src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
                                                         alt={entry.name}
                                                         className="h-20 w-20 rounded object-contain border border-border"
                                                     />
@@ -345,7 +366,7 @@ export function InventoryTable() {
                                 />
                             </TableBody>
                         </Table>
-                    </div>
+                    </ScrollArea>
                 </CardContent>
             </Card>
             {/* Move dialogs OUTSIDE the Card entirely */}

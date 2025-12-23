@@ -1,48 +1,49 @@
 drop view if exists inventory_entry_view;
-CREATE OR REPLACE VIEW inventory_entry_view AS
-WITH transaction_log AS (
-    SELECT 
-        ie.id,
-        MIN(ie.itemid) AS itemid,
-        SUM(
-            CASE 
-                WHEN t."type" = 'P' THEN t.quantity 
-                ELSE -t.quantity 
-            END
-        ) AS quantity,
-        SUM(
-            CASE 
-                WHEN t."type" = 'P' THEN t.price 
-                ELSE -t.price 
-            END * t.quantity
-        )::numeric AS balance
-    FROM inventoryentries ie
-    INNER JOIN transactions t ON t.inventoryentryid = ie.id
-    GROUP BY ie.id
-), agg AS (
-    SELECT 
-        t.itemid,
-        t.quantity,
-        t.balance,
-        p.price,
-        i."name",
-        i.markethashname,
-        i.iconurl
-    FROM transaction_log t
-    Left JOIN (
-        SELECT DISTINCT ON (itemid) *
-        FROM pricehistories
-        ORDER BY itemid, "timestamp" DESC
-    ) p ON p.itemid = t.itemid
-    INNER JOIN items i ON i.id = t.itemid
-)
-SELECT 
-    a.itemid,
+CREATE OR REPLACE VIEW public.inventory_entry_view
+AS WITH transaction_log AS (
+         SELECT 
+         	ie.userid,
+         	ie.id,
+            min(ie.itemid) AS itemid,
+            sum(
+                CASE
+                    WHEN t.type = 'P'::text THEN t.quantity
+                    ELSE - t.quantity
+                END) AS quantity,
+            sum(
+                CASE
+                    WHEN t.type = 'P'::text THEN -t.price
+                    ELSE t.price * 0.85
+                END * t.quantity::double precision)::numeric AS balance
+           FROM inventoryentries ie
+             JOIN transactions t ON t.userid = ie.userid and t.inventoryentryid = ie.id
+          GROUP BY ie.id
+        ), agg AS (
+         SELECT 
+         	t.userid,
+         	t.itemid,
+            t.quantity,
+            t.balance,
+            p.price,
+            i.name,
+            i.markethashname,
+            i.iconurl
+           FROM transaction_log t
+             LEFT JOIN ( SELECT DISTINCT ON (pricehistories.itemid) pricehistories."timestamp",
+                    pricehistories.itemid,
+                    pricehistories.price
+                   FROM pricehistories
+                  ORDER BY pricehistories.itemid, pricehistories."timestamp" DESC) p ON p.itemid = t.itemid
+             JOIN items i ON i.id = t.itemid
+        )
+ SELECT 
+ 	a.userid,
+ 	a.itemid,
     a."name",
     a.markethashname,
     a.iconurl,
-    a.quantity::int,
-    a.quantity * coalesce(a.price, 0)::numeric as totalValue,
-    coalesce(a.price, 0)::numeric as currentprice,
-    (a.quantity * coalesce(a.price, 0)::numeric - a.balance) as trend
-FROM agg a;
+    a.quantity::integer AS quantity,
+    a.quantity::numeric * COALESCE(a.price, 0::numeric) * 0.85 AS totalvalue,
+    COALESCE(a.price, 0::numeric) AS currentprice,
+    a.quantity::numeric * COALESCE(a.price, 0::numeric) * 0.85 + a.balance AS trend
+   FROM agg a;

@@ -9,12 +9,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Refit" />
         <PackageReference Include="Refit.HttpClientFactory" />
     </ItemGroup>
     
     <ItemGroup>
       <Folder Include="Input\" />
+      <Folder Include="Input\current\" />
     </ItemGroup>
 
     <ItemGroup>

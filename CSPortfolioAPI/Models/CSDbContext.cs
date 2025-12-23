@@ -1,20 +1,31 @@
 ﻿using CSPortfolioAPI.Models.Views;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace CSPortfolioAPI.Models;
 
-public class CSDbContext(DbContextOptions<CSDbContext> options) : DbContext(options)
+public class CSDbContext(DbContextOptions<CSDbContext> options) : IdentityDbContext<User>(options)
 {
     public DbSet<Item> Items { get; set; }
     public DbSet<InventoryEntry> InventoryEntries { get; set; }
     public DbSet<PriceHistory> PriceHistories { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<InventoryEntryView> InventoryEntryView { get; set; }
-    
     public DbSet<DashBoardNumbers> DashboardNumbers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Unique index on NormalizedUserName
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.NormalizedUserName)
+            .IsUnique()
+            .HasDatabaseName("UX_User_NormalizedUserName");
+
+        // Unique index on NormalizedEmail
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.NormalizedEmail)
+            .IsUnique()
+            .HasDatabaseName("UX_User_NormalizedEmail");
+        
         modelBuilder.Entity<Item>()
             .HasIndex(i => i.MarketHashName)
             .IsUnique();

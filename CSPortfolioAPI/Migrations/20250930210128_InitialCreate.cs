@@ -105,9 +105,6 @@ namespace CSPortfolioAPI.Migrations
                 name: "ix_transactions_inventoryentryid",
                 table: "transactions",
                 column: "inventoryentryid");
-            
-            migrationBuilder.ExecuteSqlFile("./Sql/Functions/CreatePriceHyperTable.psql");
-            migrationBuilder.ExecuteSqlFile("./Sql/Views/GetCompleteInventoryEntry.psql");
         }
 
         /// <inheritdoc />

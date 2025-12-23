@@ -27,6 +27,9 @@ public static class Program
 
         // Register your custom services
         builder.Services.AddScoped<ImportItemService>();
+        builder.Services.AddScoped<BitSkinImporter>();
+
+        builder.Services.AddSteamRefitClient<IBitSkinsApi>();
 
         // Add background worker
         builder.Services.AddHostedService<ImportWorker>();

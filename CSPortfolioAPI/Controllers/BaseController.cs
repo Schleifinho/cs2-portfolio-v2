@@ -80,7 +80,7 @@ public abstract class BaseController<TDto, TEntity>(
     }
     
     [HttpPut]
-    public virtual async Task<ActionResult<TDto>> UpdateTournament([FromBody] TDto dto)
+    public virtual async Task<ActionResult<TDto>> UpdateAsync([FromBody] TDto dto)
     {
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);

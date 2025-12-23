@@ -1,10 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using CSPortfolioAPI.Contracts;
 
 namespace CSPortfolioAPI.Models;
 
-public class InventoryEntry : DbEntry
+public class InventoryEntry : DbEntry, IUserFK
 {
+    public string UserId { get; set; }
+    [ForeignKey(nameof(UserId))]
+    public User User { get; set; }
+    
     [Required]
     public int ItemId { get; set; }
 
