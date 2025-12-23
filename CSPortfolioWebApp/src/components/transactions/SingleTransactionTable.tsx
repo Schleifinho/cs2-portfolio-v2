@@ -79,85 +79,84 @@ export default function SingleTransactionTable({
 
                         {/* 🔹 SCROLLABLE BODY */}
                         <ScrollArea
+                            ref={parentRef}
                             className="w-full"
-                            style={{ height: "calc(100vh - 300px)" }}
+                            style={{ height: "calc(100vh - 350px)" }}
                         >
-                            <div ref={parentRef}>
-                                <Table className="table-fixed border-collapse">
-                                    <TableBody>
-                                        {/* Top spacer */}
-                                        <tr
-                                            style={{
-                                                height: virtualizer.getVirtualItems()[0]?.start ?? 0,
-                                            }}
-                                        />
+                            <Table className="table-fixed border-collapse">
+                                <TableBody>
+                                    {/* Top spacer */}
+                                    <tr
+                                        style={{
+                                            height: virtualizer.getVirtualItems()[0]?.start ?? 0,
+                                        }}
+                                    />
 
-                                        {virtualizer.getVirtualItems().map((row: any) => {
-                                            const tx = data[row.index];
-                                            return (
-                                                <TableRow
-                                                    key={tx.id}
-                                                    style={{ height: row.size }}
-                                                    className="border-border hover:bg-secondary/50"
-                                                >
-                                                    <TableCell className="flex items-center space-x-3">
-                                                        {tx.iconUrl ? (
-                                                            <img
-                                                                src={`https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}`}
-                                                                alt={tx.name}
-                                                                className="h-20 w-20 rounded object-contain border"
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg`}
-                                                                alt={tx.name}
-                                                                className="h-20 w-20 rounded object-contain border"
-                                                            />
-                                                        )}
-                                                        <p className="font-medium">{tx.name}</p>
-                                                    </TableCell>
+                                    {virtualizer.getVirtualItems().map((row: any) => {
+                                        const tx = data[row.index];
+                                        return (
+                                            <TableRow
+                                                key={tx.id}
+                                                style={{ height: row.size }}
+                                                className="border-border hover:bg-secondary/50"
+                                            >
+                                                <TableCell className="flex items-center space-x-3">
+                                                    {tx.iconUrl ? (
+                                                        <img
+                                                            src={`https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}`}
+                                                            alt={tx.name}
+                                                            className="h-20 w-20 rounded object-contain border"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg`}
+                                                            alt={tx.name}
+                                                            className="h-20 w-20 rounded object-contain border"
+                                                        />
+                                                    )}
+                                                    <p className="font-medium">{tx.name}</p>
+                                                </TableCell>
 
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="secondary">{tx.quantity}</Badge>
-                                                    </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="secondary">{tx.quantity}</Badge>
+                                                </TableCell>
 
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="secondary">{tx.price.toFixed(2)}€</Badge>
-                                                    </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="secondary">{tx.price.toFixed(2)}€</Badge>
+                                                </TableCell>
 
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="secondary">
-                                                            {(tx.quantity * tx.price).toFixed(2)}€
-                                                        </Badge>
-                                                    </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="secondary">
+                                                        {(tx.quantity * tx.price).toFixed(2)}€
+                                                    </Badge>
+                                                </TableCell>
 
-                                                    <TableCell className="text-center">
-                                                        {new Date(tx.timestamp).toLocaleDateString()}
-                                                    </TableCell>
+                                                <TableCell className="text-center">
+                                                    {new Date(tx.timestamp).toLocaleDateString()}
+                                                </TableCell>
 
-                                                    <TableCell className="text-center">
-                                                        <Button size="sm" variant="ghost" onClick={() => onEdit(tx)}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button size="sm" variant="ghost" onClick={() => onDelete(tx.id!)}>
-                                                            <Trash className="h-4 w-4" />
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
+                                                <TableCell className="text-center">
+                                                    <Button size="sm" variant="ghost" onClick={() => onEdit(tx)}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button size="sm" variant="ghost" onClick={() => onDelete(tx.id!)}>
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
 
-                                        {/* Bottom spacer */}
-                                        <tr
-                                            style={{
-                                                height:
-                                                    virtualizer.getTotalSize() -
-                                                    (virtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                                            }}
-                                        />
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                    {/* Bottom spacer */}
+                                    <tr
+                                        style={{
+                                            height:
+                                                virtualizer.getTotalSize() -
+                                                (virtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                                        }}
+                                    />
+                                </TableBody>
+                            </Table>
                         </ScrollArea>
                     </>
                 )}

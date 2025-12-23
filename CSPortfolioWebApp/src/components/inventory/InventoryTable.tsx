@@ -165,9 +165,18 @@ export function InventoryTable() {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    onClick={async () => await handlePriceRefreshAll()}
+                >
+                    <RefreshCcw className="h-4 w-4"/> Price Refresh
+                </Button>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
                     onClick={() => queryClient.invalidateQueries({queryKey: ["inventoryEntries"]})}
                 >
-                    <RefreshCcw className="h-4 w-4"/>
+                    <RefreshCcw className="h-4 w-4"/> View Refresh
                 </Button>
             </div>
 
@@ -178,19 +187,7 @@ export function InventoryTable() {
                             <div>
                                 Current Inventory ({sortedEntries.length})
                             </div>
-                            <div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex items-center gap-1"
-                                    onClick={async () => await handlePriceRefreshAll()}
-                                >
-                                    <RefreshCcw className="h-4 w-4"/> Price Refresh
-                                </Button>
-                            </div>
                         </div>
-
-
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -235,133 +232,131 @@ export function InventoryTable() {
                         </TableHeader>
                     </Table>
                     <ScrollArea
+                        ref={parentRef}
                         className="relative w-full"
-                        style={{ height: `calc(100vh - 275px)` }}
+                        style={{ height: `calc(100vh - 300px)` }}
                     >
-                        <div ref={parentRef}
-                             style={{height: `calc(100vh - 275px)`}}>
-                            <Table className="table-fixed border-collapse">
-                                <TableBody>
-                                    {/* Spacer at the top */}
-                                    <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
+                        <Table className="table-fixed border-collapse">
+                            <TableBody>
+                                {/* Spacer at the top */}
+                                <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
 
-                                    {rowVirtualizer.getVirtualItems().map((vRow) => {
-                                        const entry = sortedEntries[vRow.index];
-                                        return (
-                                            <TableRow
-                                                key={entry.itemId}
-                                                style={{height: vRow.size}}
-                                                className="border-border hover:bg-secondary/50"
-                                            >
-                                                <TableCell className="flex items-center space-x-3">
-                                                    {entry.iconUrl && (
-                                                        <img
-                                                            src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
-                                                            alt={entry.name}
-                                                            className="h-20 w-20 rounded object-contain border border-border"
-                                                        />
-                                                    )}
-                                                    {!entry.iconUrl && (
-                                                        <img
-                                                            src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
-                                                            alt={entry.name}
-                                                            className="h-20 w-20 rounded object-contain border border-border"
-                                                        />
-                                                    )}
-                                                    <div>
-                                                        <p className="font-medium text-foreground">{entry.name}</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="bg-primary/10 text-primary border-primary/20"
-                                                    >
-                                                        {entry.quantity}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="font-medium text-foreground text-center">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="bg-primary/10 text-primary border-primary/20"
-                                                    >
-                                                        {entry.totalValue.toFixed(2)}€
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="font-medium text-foreground text-center">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="bg-primary/10 text-primary border-primary/20"
-                                                    >
-                                                        {entry.currentPrice.toFixed(2)}€
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="font-medium text-foreground text-center">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={`${
-                                                            entry.trend > 0
-                                                                ? "bg-green-700/10 text-green-700 border-green-700/20"
-                                                                : entry.trend < 0
-                                                                    ? "bg-red-700/10 text-red-700 border-red-700/20"
-                                                                    : "bg-primary/10 text-primary border-primary/20"
-                                                        }`}
-                                                    >
-                                                        {entry.trend.toFixed(2)}€
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                        onClick={() => {
-                                                            setSelectedItemId(entry.itemId); //
-                                                            setPurchaseDialogOpen(true);     // open the dialog
-                                                        }}
-                                                    >
-                                                        <ShoppingCart className="h-3 w-3"/>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                        onClick={() => {
-                                                            setSelectedItemId(entry.itemId); //
-                                                            setSaleDialogOpen(true);     // open the dialog
-                                                        }}
-                                                    >
-                                                        <DollarSign className="h-3 w-3"/>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                        onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
-                                                    >
-                                                        <RefreshCcw className="h-3 w-3"/>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                    >
-                                                        <Edit className="h-3 w-3"/>
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                    <tr
-                                        style={{
-                                            height:
-                                                rowVirtualizer.getTotalSize() -
-                                                (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                                        }}
-                                    />
-                                </TableBody>
-                            </Table>
-                        </div>
+                                {rowVirtualizer.getVirtualItems().map((vRow) => {
+                                    const entry = sortedEntries[vRow.index];
+                                    return (
+                                        <TableRow
+                                            key={entry.itemId}
+                                            style={{height: vRow.size}}
+                                            className="border-border hover:bg-secondary/50"
+                                        >
+                                            <TableCell className="flex items-center space-x-3">
+                                                {entry.iconUrl && (
+                                                    <img
+                                                        src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
+                                                        alt={entry.name}
+                                                        className="h-20 w-20 rounded object-contain border border-border"
+                                                    />
+                                                )}
+                                                {!entry.iconUrl && (
+                                                    <img
+                                                        src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
+                                                        alt={entry.name}
+                                                        className="h-20 w-20 rounded object-contain border border-border"
+                                                    />
+                                                )}
+                                                <div>
+                                                    <p className="font-medium text-foreground">{entry.name}</p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {entry.quantity}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-medium text-foreground text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {entry.totalValue.toFixed(2)}€
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-medium text-foreground text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-primary/10 text-primary border-primary/20"
+                                                >
+                                                    {entry.currentPrice.toFixed(2)}€
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="font-medium text-foreground text-center">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className={`${
+                                                        entry.trend > 0
+                                                            ? "bg-green-700/10 text-green-700 border-green-700/20"
+                                                            : entry.trend < 0
+                                                                ? "bg-red-700/10 text-red-700 border-red-700/20"
+                                                                : "bg-primary/10 text-primary border-primary/20"
+                                                    }`}
+                                                >
+                                                    {entry.trend.toFixed(2)}€
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                    onClick={() => {
+                                                        setSelectedItemId(entry.itemId); //
+                                                        setPurchaseDialogOpen(true);     // open the dialog
+                                                    }}
+                                                >
+                                                    <ShoppingCart className="h-3 w-3"/>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                    onClick={() => {
+                                                        setSelectedItemId(entry.itemId); //
+                                                        setSaleDialogOpen(true);     // open the dialog
+                                                    }}
+                                                >
+                                                    <DollarSign className="h-3 w-3"/>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                    onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
+                                                >
+                                                    <RefreshCcw className="h-3 w-3"/>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                >
+                                                    <Edit className="h-3 w-3"/>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                                <tr
+                                    style={{
+                                        height:
+                                            rowVirtualizer.getTotalSize() -
+                                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                                    }}
+                                />
+                            </TableBody>
+                        </Table>
                     </ScrollArea>
                 </CardContent>
             </Card>

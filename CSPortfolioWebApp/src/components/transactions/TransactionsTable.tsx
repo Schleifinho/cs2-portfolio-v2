@@ -31,7 +31,6 @@ import {Button} from "@/components/ui/button.tsx";
 export function TransactionsTable() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
   // 🔹 Queries

@@ -143,7 +143,7 @@ export function ItemsTable() {
             </Table>
             <ScrollArea
                 ref={parentRef}
-                className="h-[calc(100vh-280px)] w-full"
+                className="h-[calc(100vh-300px)] w-full"
             >
               <Table className="table-fixed border-collapse">
                 <TableBody>
