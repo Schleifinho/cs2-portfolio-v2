@@ -50,7 +50,7 @@ Easily track and manage your **CS2 investments** — powered by Docker, RabbitMQ
 On first run, load the initial CS2 item data into the database:
 
 ```bash
-psql -h localhost -p 5432 -U csapi -d csportfolio -f Data/DBDumps/items.sql
+psql -h localhost -p 5432 -U csapi -d csportfolio -f Data/DBDumps/items_20251223.psql
 ```
 or connect to DB and copy the insert statement 🙂
 
