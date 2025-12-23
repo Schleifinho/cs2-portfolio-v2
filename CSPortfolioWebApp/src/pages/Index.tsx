@@ -9,10 +9,13 @@ import { Login } from "@/components/auth/Login";
 import { Register } from "@/components/auth/Register";
 import { Welcome } from "@/pages/Welcome";
 import {Profile} from "@/components/profile/profile.tsx";
+import {authApi} from "@/lib/auth.ts";
+import {useNavigate} from "react-router-dom";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("welcome");
+  const navigate = useNavigate();
 
   // Handle redirect on login/logout
   useEffect(() => {
@@ -26,6 +29,13 @@ const Index = () => {
       }
     }
   }, [user]);
+
+  const handleLogout = async () => {
+    await authApi.logout();
+    await logout();
+    setActiveTab("welcome"); // reset tab
+    navigate("/");           // optional
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -51,7 +61,7 @@ const Index = () => {
 
   return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <Sidebar onLogout={handleLogout}  activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="flex-1 p-6">
           {renderContent()}

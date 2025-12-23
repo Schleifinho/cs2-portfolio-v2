@@ -12,12 +12,13 @@ import {
 import { useAuth } from "@/lib/AuthContext";
 
 interface SidebarProps {
+  onLogout: () => void
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const { user, logout } = useAuth();
+export function Sidebar({onLogout, activeTab, onTabChange }: SidebarProps) {
+  const { user } = useAuth();
 
   // Menu items only for logged in users
   const loggedInMenuItems = [
@@ -96,7 +97,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                       <Button
                           variant="destructive"
                           className="w-full justify-start gap-3"
-                          onClick={() => logout()}
+                          onClick={() => onLogout()}
                       >
                           <LogOut className="h-4 w-4" />
                           Logout
