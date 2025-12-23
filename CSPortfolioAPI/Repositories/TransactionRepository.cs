@@ -80,6 +80,93 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         }
     }
     
+    public async Task<Result<List<Transaction>>> AddSalesBulkAsync(
+    string userId,
+    List<SaleDto> sales)
+    {
+        if (sales == null || sales.Count == 0)
+        {
+            return Result.Ok(new List<Transaction>());
+        }
+
+        // 🔹 Load all inventory entries in ONE query
+        var itemIds = sales.Select(s => s.ItemId).Distinct().ToList();
+
+        var inventoryEntries = await Context.InventoryEntries
+            .Where(i => itemIds.Contains(i.ItemId))
+            .ToListAsync();
+
+        // 🔹 Validate ownership & existence
+        List<SaleDto> validatedSales = [];
+        foreach (var sale in sales)
+        {
+            var entry = inventoryEntries.FirstOrDefault(i => i.ItemId == sale.ItemId);
+
+            if (entry == null)
+                continue;
+
+            if (entry.UserId != userId)
+                continue;
+            
+            validatedSales.Add(sale);
+        }
+
+        // 🔹 Validate stock (aggregate quantities!)
+        var groupedQuantities = validatedSales
+            .GroupBy(s => s.ItemId)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+        foreach (var entry in inventoryEntries)
+        {
+            if (groupedQuantities.TryGetValue(entry.ItemId, out var needed))
+            {
+                if (entry.QuantityOnHand < needed)
+                {
+                    return Result.Fail<List<Transaction>>(
+                        new BadRequestError($"Insufficient stock for item {entry.ItemId}.")
+                    );
+                }
+            }
+        }
+
+        var transactions = new List<Transaction>();
+
+        await using var tx = await Context.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var sale in validatedSales)
+            {
+                var entry = inventoryEntries.First(i => i.ItemId == sale.ItemId);
+
+                entry.QuantityOnHand -= sale.Quantity;
+
+                var transaction = new Transaction
+                {
+                    UserId = userId,
+                    Type = Transaction.Sale,
+                    Timestamp = sale.Timestamp,
+                    Price = sale.Price,
+                    Quantity = sale.Quantity,
+                    InventoryEntryId = entry.Id
+                };
+
+                transactions.Add(transaction);
+            }
+
+            await Context.Transactions.AddRangeAsync(transactions);
+            await Context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return Result.Ok(transactions);
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+            return Result.Fail<List<Transaction>>(new Error(ex.Message));
+        }
+    }
+
+    
     public async Task<Result<Transaction>> UpdateSaleAsync(int id, string userId, SaleDto saleDto)
     {
         await using var t = await Context.Database.BeginTransactionAsync();
@@ -226,6 +313,101 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
             return Result.Fail<Transaction>(new Error(ex.Message));
         }
     }
+    
+    public async Task<Result<List<Transaction>>> AddPurchasesBulkAsync(
+    string userId,
+    List<PurchaseDto> purchaseDtos)
+    {
+        if (purchaseDtos == null || purchaseDtos.Count == 0)
+        {
+            return Result.Ok(new List<Transaction>());
+        }
+
+        // 🔹 Load inventory entries for all items
+        var itemIds = purchaseDtos
+            .Select(p => p.ItemId)
+            .Distinct()
+            .ToList();
+
+        var inventoryEntries = await Context.InventoryEntries
+            .Where(i => itemIds.Contains(i.ItemId) && i.UserId == userId)
+            .ToListAsync();
+
+        // 🔹 Create missing inventory entries
+        foreach (var itemId in itemIds)
+        {
+            if (!inventoryEntries.Any(i => i.ItemId == itemId))
+            {
+                inventoryEntries.Add(new InventoryEntry
+                {
+                    UserId = userId,
+                    ItemId = itemId,
+                    QuantityOnHand = 0
+                });
+            }
+        }
+        
+        var newEntries = inventoryEntries.Where(e => e.Id == 0).ToList();
+        if (newEntries.Any())
+        {
+            await Context.InventoryEntries.AddRangeAsync(newEntries);
+            await Context.SaveChangesAsync(); // now new entries get proper Ids
+        }
+        
+        // 🔹 Ownership validation
+        foreach (var entry in inventoryEntries)
+        {
+            if (entry.UserId != userId)
+            {
+                return Result.Fail<List<Transaction>>(
+                    new NotAuthorizedError("You are not authorized to update one or more items.")
+                );
+            }
+        }
+
+        var transactions = new List<Transaction>();
+
+        await using var tx = await Context.Database.BeginTransactionAsync();
+        try
+        {
+            // 🔹 Add quantities + create transactions
+            foreach (var purchase in purchaseDtos)
+            {
+                var entry = inventoryEntries.First(i => i.ItemId == purchase.ItemId);
+
+                entry.QuantityOnHand += purchase.Quantity;
+
+                transactions.Add(new Transaction
+                {
+                    UserId = userId,
+                    Type = Transaction.Purchase,
+                    Timestamp = purchase.Timestamp,
+                    Price = purchase.Price,
+                    Quantity = purchase.Quantity,
+                    InventoryEntryId = entry.Id
+                });
+            }
+
+            // 🔹 Persist
+            await Context.InventoryEntries.AddRangeAsync(
+                inventoryEntries.Where(e => e.Id == 0)
+            );
+
+            await Context.Transactions.AddRangeAsync(transactions);
+            await Context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return Result.Ok(transactions);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            logger.LogError(ex.StackTrace);
+            await tx.RollbackAsync();
+            return Result.Fail<List<Transaction>>(new Error(ex.Message));
+        }
+    }
+
     
     public async Task<Result<Transaction>> UpdatePurchaseAsync(int id, string userId, PurchaseDto purchaseDto)
     {

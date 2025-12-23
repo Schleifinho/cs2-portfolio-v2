@@ -61,6 +61,32 @@ public class TransactionsController (ILogger<TransactionsController> logger,
         return response.ToActionResult();
     }
     
+    [HttpPost("sale/bulk")]
+    public async Task<ActionResult<List<SaleDto>>> BulkAddSaleAsync([FromBody] List<SaleDto> saleDtos)
+    {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+
+        logger.LogInformation($"Add Sales Bulk");
+        var response = await repository.AddSalesBulkAsync(userId, saleDtos);
+        if (response.IsSuccess)
+        {
+            var dtos = response.Value.Select(x => new SaleDto()
+            {
+                Id = x.Id,
+                Quantity = x.Quantity,
+                Price = x.Price,
+                Timestamp = x.Timestamp
+            });
+            return Ok(dtos);
+        }
+
+        return response.ToActionResult();
+    }
+    
     [HttpPut("sale/{id}")]
     public async Task<ActionResult<SaleDto>> UpdateSalesAsync([FromRoute]int id, [FromBody] SaleDto saleDto)
     {
@@ -144,6 +170,35 @@ public class TransactionsController (ILogger<TransactionsController> logger,
                 Timestamp = response.Value.Timestamp
             };
             return Ok(dto);
+        }
+        return response.ToActionResult();
+    }
+    
+    [HttpPost("purchase/bulk")]
+    public async Task<ActionResult<PurchaseDto>> AddPurchaseAsync([FromBody] List<PurchaseDto> purchaseDtos)
+    {
+        var userId = userManager.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized("You are not logged in");
+        }
+        
+        logger.LogInformation($"Add Purchases");
+        var response = await repository.AddPurchasesBulkAsync(userId, purchaseDtos);
+        if (response.IsSuccess)
+        {
+            var dtos = response.Value.Select(x => new PurchaseDto
+            {
+                Id = x.Id,
+                Quantity = x.Quantity,
+                Price = x.Price,
+                Timestamp = x.Timestamp
+            });
+            return Ok(dtos);
+        }
+        else
+        {
+            logger.LogError($"Error {response.ToActionResult()}");
         }
         return response.ToActionResult();
     }

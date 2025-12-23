@@ -29,6 +29,7 @@ import {AddSaleDialog} from "@/components/transactions/AddSaleDialog.tsx";
 import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.tsx";
 import {useTokenSearch} from "@/lib/searchbar.ts";
 import {useAuth} from "@/lib/AuthContext.tsx";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 export function InventoryTable() {
     const queryClient = useQueryClient();
@@ -113,7 +114,7 @@ export function InventoryTable() {
         count: sortedEntries.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 110,
-        overscan: 10,
+        overscan: 25,
     });
 
     const [saleDialogOpen, setSaleDialogOpen] = useState(false);
@@ -192,162 +193,176 @@ export function InventoryTable() {
 
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div ref={parentRef} className="relative w-full overflow-auto no-scrollbar"
-                         style={{height: `calc(100vh - 275px)`}}>
-                        <Table className="table-fixed border-collapse">
-                            <TableHeader>
-                                <TableRow className="border-border">
-                                    <TableHead
-                                        onClick={() => handleSort("name")}
-                                        className="cursor-pointer select-none text-muted-foreground w-5/10"
-                                    >
-                                        Item <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("quantity")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("totalValue")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Total Value
-                                        ({sortedEntries.reduce((sum, item) => sum + item.totalValue, 0).toFixed(2)}€)
-                                        <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("currentPrice")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
-                                    >
-                                        Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead
-                                        onClick={() => handleSort("trend")}
-                                        className="cursor-pointer select-none text-muted-foreground text-center w-1/10">
-                                        Trend ({sortedEntries.reduce((sum, item) => sum + item.trend, 0).toFixed(2)}€)
-                                        <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
-                                    </TableHead>
-                                    <TableHead className="w-1/10 text-center">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
+                <CardContent className="p-0">
+                    {/* 🔹 STATIC HEADER */}
+                    <Table className="table-fixed border-collapse">
+                        <TableHeader>
+                            <TableRow className="border-border">
+                                <TableHead
+                                    onClick={() => handleSort("name")}
+                                    className="cursor-pointer select-none text-muted-foreground w-5/10"
+                                >
+                                    Item <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("quantity")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Quantity <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("totalValue")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Total Value
+                                    ({sortedEntries.reduce((sum, item) => sum + item.totalValue, 0).toFixed(2)}€)
+                                    <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("currentPrice")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10"
+                                >
+                                    Current Price <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead
+                                    onClick={() => handleSort("trend")}
+                                    className="cursor-pointer select-none text-muted-foreground text-center w-1/10">
+                                    Trend ({sortedEntries.reduce((sum, item) => sum + item.trend, 0).toFixed(2)}€)
+                                    <ArrowUpDown className="inline-block ml-1 h-4 w-4"/>
+                                </TableHead>
+                                <TableHead className="w-1/10 text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                    </Table>
+                    <ScrollArea
+                        className="relative w-full"
+                        style={{ height: `calc(100vh - 275px)` }}
+                    >
+                        <div ref={parentRef}
+                             style={{height: `calc(100vh - 275px)`}}>
+                            <Table className="table-fixed border-collapse">
+                                <TableBody>
+                                    {/* Spacer at the top */}
+                                    <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
 
-                            <TableBody>
-                                {/* Spacer at the top */}
-                                <tr style={{height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0}}/>
-
-                                {rowVirtualizer.getVirtualItems().map((vRow) => {
-                                    const entry = sortedEntries[vRow.index];
-                                    return (
-                                        <TableRow
-                                            key={entry.itemId}
-                                            style={{height: vRow.size}}
-                                            className="border-border hover:bg-secondary/50"
-                                        >
-                                            <TableCell className="flex items-center space-x-3">
-                                                {entry.iconUrl && (
-                                                    <img
-                                                        src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
-                                                        alt={entry.name}
-                                                        className="h-20 w-20 rounded object-contain border border-border"
-                                                    />
-                                                )}
-                                                <div>
-                                                    <p className="font-medium text-foreground">{entry.name}</p>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="bg-primary/10 text-primary border-primary/20"
-                                                >
-                                                    {entry.quantity}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="font-medium text-foreground text-center">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="bg-primary/10 text-primary border-primary/20"
-                                                >
-                                                    {entry.totalValue.toFixed(2)}€
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="font-medium text-foreground text-center">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="bg-primary/10 text-primary border-primary/20"
-                                                >
-                                                    {entry.currentPrice.toFixed(2)}€
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="font-medium text-foreground text-center">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={`${
-                                                        entry.trend > 0
-                                                            ? "bg-green-700/10 text-green-700 border-green-700/20"
-                                                            : entry.trend < 0
-                                                                ? "bg-red-700/10 text-red-700 border-red-700/20"
-                                                                : "bg-primary/10 text-primary border-primary/20"
-                                                    }`}
-                                                >
-                                                    {entry.trend.toFixed(2)}€
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                    onClick={() => {
-                                                        setSelectedItemId(entry.itemId); //
-                                                        setPurchaseDialogOpen(true);     // open the dialog
-                                                    }}
-                                                >
-                                                    <ShoppingCart className="h-3 w-3"/>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                    onClick={() => {
-                                                        setSelectedItemId(entry.itemId); //
-                                                        setSaleDialogOpen(true);     // open the dialog
-                                                    }}
-                                                >
-                                                    <DollarSign className="h-3 w-3"/>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                    onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
-                                                >
-                                                    <RefreshCcw className="h-3 w-3"/>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                >
-                                                    <Edit className="h-3 w-3"/>
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                                <tr
-                                    style={{
-                                        height:
-                                            rowVirtualizer.getTotalSize() -
-                                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                                    }}
-                                />
-                            </TableBody>
-                        </Table>
-                    </div>
+                                    {rowVirtualizer.getVirtualItems().map((vRow) => {
+                                        const entry = sortedEntries[vRow.index];
+                                        return (
+                                            <TableRow
+                                                key={entry.itemId}
+                                                style={{height: vRow.size}}
+                                                className="border-border hover:bg-secondary/50"
+                                            >
+                                                <TableCell className="flex items-center space-x-3">
+                                                    {entry.iconUrl && (
+                                                        <img
+                                                            src={`https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}`}
+                                                            alt={entry.name}
+                                                            className="h-20 w-20 rounded object-contain border border-border"
+                                                        />
+                                                    )}
+                                                    {!entry.iconUrl && (
+                                                        <img
+                                                            src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
+                                                            alt={entry.name}
+                                                            className="h-20 w-20 rounded object-contain border border-border"
+                                                        />
+                                                    )}
+                                                    <div>
+                                                        <p className="font-medium text-foreground">{entry.name}</p>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="bg-primary/10 text-primary border-primary/20"
+                                                    >
+                                                        {entry.quantity}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground text-center">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="bg-primary/10 text-primary border-primary/20"
+                                                    >
+                                                        {entry.totalValue.toFixed(2)}€
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground text-center">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="bg-primary/10 text-primary border-primary/20"
+                                                    >
+                                                        {entry.currentPrice.toFixed(2)}€
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground text-center">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className={`${
+                                                            entry.trend > 0
+                                                                ? "bg-green-700/10 text-green-700 border-green-700/20"
+                                                                : entry.trend < 0
+                                                                    ? "bg-red-700/10 text-red-700 border-red-700/20"
+                                                                    : "bg-primary/10 text-primary border-primary/20"
+                                                        }`}
+                                                    >
+                                                        {entry.trend.toFixed(2)}€
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                        onClick={() => {
+                                                            setSelectedItemId(entry.itemId); //
+                                                            setPurchaseDialogOpen(true);     // open the dialog
+                                                        }}
+                                                    >
+                                                        <ShoppingCart className="h-3 w-3"/>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                        onClick={() => {
+                                                            setSelectedItemId(entry.itemId); //
+                                                            setSaleDialogOpen(true);     // open the dialog
+                                                        }}
+                                                    >
+                                                        <DollarSign className="h-3 w-3"/>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                        onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
+                                                    >
+                                                        <RefreshCcw className="h-3 w-3"/>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                    >
+                                                        <Edit className="h-3 w-3"/>
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    <tr
+                                        style={{
+                                            height:
+                                                rowVirtualizer.getTotalSize() -
+                                                (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
+                                        }}
+                                    />
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </ScrollArea>
                 </CardContent>
             </Card>
             {/* Move dialogs OUTSIDE the Card entirely */}

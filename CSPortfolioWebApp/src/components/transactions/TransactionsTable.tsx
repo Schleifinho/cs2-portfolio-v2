@@ -132,14 +132,14 @@ export function TransactionsTable() {
     count: filteredPurchases.length, // <- this must reflect the current data length
     getScrollElement: () => purchaseParentRef.current,
     estimateSize: () => 64,
-    overscan: 10,
+    overscan: 25,
   });
 
   const saleVirtualizer = useVirtualizer({
     count: filteredSales.length, // <- must update when switching tabs
     getScrollElement: () => saleParentRef.current,
     estimateSize: () => 64,
-    overscan: 10,
+    overscan: 25,
   });
 
   // 🔹 Editing
