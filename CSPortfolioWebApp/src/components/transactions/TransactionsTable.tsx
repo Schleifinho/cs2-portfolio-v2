@@ -188,6 +188,15 @@ export function TransactionsTable() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 w-full"
               />
+              {/* Clear Button */}
+              {search && (
+                  <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-2 top-2.5 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+              )}
             </div>
 
             <Button
