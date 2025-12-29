@@ -34,6 +34,10 @@ public class AuthController(
         };
 
         var result = await userManager.CreateAsync(user, dto.Password);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+        
+        await userManager.AddToRoleAsync(user, AppRoles.NoEmailVerification);
         
         var token = jwtTokenHandler.GenerateJwtTokenForUser(user);
         Response.Cookies.Append("jwt", token, new CookieOptions
@@ -43,13 +47,10 @@ public class AuthController(
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(14)
         });
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
         
         var emailToken = tokenService.GenerateEmailVerificationToken(user.Id);
         await emailService.SendVerificationEmailAsync(user, emailToken);
-        return Ok(user.ToDto());
+        return Ok(await user.ToDtoAsync(userManager));
     }
 
     // Login Endpoint
@@ -77,7 +78,7 @@ public class AuthController(
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(14)
         });
-        return Ok(user.ToDto());
+        return Ok(await user.ToDtoAsync(userManager));
     }
     
     // This route doesn't really do anything to the JWT token itself

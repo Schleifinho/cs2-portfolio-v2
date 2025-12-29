@@ -27,10 +27,11 @@ import { AddPurchaseDialog } from "@/components/transactions/AddPurchasesDialog.
 import { useTokenSearch } from "@/lib/searchbar.ts";
 import { useAuth } from "@/lib/AuthContext.tsx";
 import {ScrollArea} from "@/components/ui/scroll-area.tsx";
+import {AppRoles} from "@/types/AppRoles.ts";
 
 export function ItemsTable() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, hasAnyRole } = useAuth();
 
   const { data: items = [], isLoading, isError, error } = useQuery<Item[]>({
     queryKey: ["items", user?.username],
@@ -197,6 +198,7 @@ export function ItemsTable() {
                             >
                               <ShoppingCart className="h-3 w-3" />
                             </Button>
+                            { hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -208,6 +210,9 @@ export function ItemsTable() {
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
+                                )
+                            }
+                            { hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -215,7 +220,8 @@ export function ItemsTable() {
                                 onClick={() => handleDelete(item.id)}
                             >
                               <Trash className="h-3 w-3" />
-                            </Button>
+                            </Button>)
+                          }
                           </TableCell>
                         </TableRow>
                     );

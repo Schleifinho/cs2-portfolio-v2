@@ -4,6 +4,7 @@ using CSPortfolioAPI.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CSPortfolioAPI.Controllers.Application;
 
@@ -17,6 +18,9 @@ public sealed class EmailVerificationController(
     ILogger<EmailVerificationController> logger)
     : ControllerBase
 {
+    private static readonly TimeSpan VerificationCooldown = TimeSpan.FromMinutes(5);
+    
+    [EnableRateLimiting(AppRateLimits.EmailVerification)]
     [HttpPost("verify/send")]
     public async Task<IActionResult> SendVerification()
     {
@@ -26,10 +30,25 @@ public sealed class EmailVerificationController(
 
         if (user.EmailConfirmed)
             return BadRequest("Email already verified");
+        
+        if (user.LastVerificationEmailSentAt.HasValue &&
+            DateTime.UtcNow - user.LastVerificationEmailSentAt < VerificationCooldown)
+        {
+            var retryAfter =
+                VerificationCooldown - (DateTime.UtcNow - user.LastVerificationEmailSentAt.Value);
+
+            return StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                new { retryAfterSeconds = (int)retryAfter.TotalSeconds }
+            );
+        }
 
         var token = tokenService.GenerateEmailVerificationToken(user.Id);
         await emailService.SendVerificationEmailAsync(user, token);
 
+        user.LastVerificationEmailSentAt = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
+        
         return Ok();
     }
 
@@ -48,6 +67,9 @@ public sealed class EmailVerificationController(
 
         user.EmailConfirmed = true;
         await userManager.UpdateAsync(user);
+        
+        await userManager.RemoveFromRoleAsync(user, AppRoles.NoEmailVerification);
+        await userManager.AddToRoleAsync(user, AppRoles.Normal);
 
         return Ok();
     }

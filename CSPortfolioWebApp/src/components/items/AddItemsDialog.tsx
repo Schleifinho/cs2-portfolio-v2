@@ -16,6 +16,8 @@ import { addItem, updateItem } from "@/lib/itemsApi.ts"; // add updateItem API
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {Item} from "@/types/Item.ts";
+import {AppRoles} from "@/types/AppRoles.ts";
+import {useAuth} from "@/lib/AuthContext.tsx";
 
 type AddItemDialogProps = {
     item?: Item;
@@ -25,6 +27,7 @@ type AddItemDialogProps = {
 
 export function AddItemDialog({ item, open: controlledOpen, onOpenChange }: AddItemDialogProps) {
     const queryClient = useQueryClient();
+    const { hasAnyRole } = useAuth();
 
     const isControlled = controlledOpen !== undefined;
 
@@ -72,7 +75,7 @@ export function AddItemDialog({ item, open: controlledOpen, onOpenChange }: AddI
 
     return (
         <Dialog open={dialogOpen} onOpenChange={(v) => (isControlled ? onOpenChange?.(v) : setOpen(v))}>
-            {!item && !isControlled && (
+            {!item && !isControlled && hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
                 <DialogTrigger asChild>
                     <Button className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary">
                         <Plus className="mr-2 h-4 w-4" />

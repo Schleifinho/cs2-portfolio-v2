@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using brevo_csharp.Api;
 using brevo_csharp.Client;
 using CSPortfolioAPI.Contracts;
@@ -6,6 +7,7 @@ using CSPortfolioAPI.Middlewares;
 using CSPortfolioAPI.Models;
 using CSPortfolioAPI.Options;
 using CSPortfolioAPI.Services;
+using CSPortfolioAPI.Utils;
 using CSPortfolioLib.Producers;
 using MessageBrokerLib.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -105,6 +107,28 @@ builder.Services.AddScoped<ITransactionalEmailsApi, TransactionalEmailsApi>();
 builder.Services.AddScoped<IEmailService, BrevoEmailService>();
 builder.Services.AddScoped<EmailVerificationService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(AppRateLimits.EmailVerification, context =>
+    {
+        // Use user ID if authenticated, otherwise fallback to IP
+        var key =
+            context.User?.Identity?.IsAuthenticated == true
+                ? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
+                : context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            key,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromMinutes(10),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+});
+
 #region Run APP
 var app = builder.Build();
 Console.WriteLine($"Running {app.Environment.EnvironmentName}");
@@ -114,6 +138,7 @@ Console.WriteLine($"Running {app.Environment.EnvironmentName}");
 app.UseStaticFiles();
 
 app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 // Make sure we don't have cookie authentication enabled by accident
@@ -143,6 +168,8 @@ dbContext.Database.Migrate();
 // Masstransit
 var dbMassTransitContext = scope.ServiceProvider.GetRequiredService<MassTransitDbContext>();
 dbMassTransitContext.Database.Migrate();
+
+await RoleSeeder.SeedAsync(scope.ServiceProvider);
 
 app.Run();
 

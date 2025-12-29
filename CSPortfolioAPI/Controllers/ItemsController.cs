@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CSPortfolioAPI.Models;
 using CSPortfolioAPI.Repositories;
+using CSPortfolioAPI.Utils;
 using CSPortfolioLib.DTOs.Item;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,5 +24,11 @@ public class ItemsController(ILogger<ItemsController> logger, ItemRepository rep
     {
         var items = await repository.GetIconLess();
         return Ok(mapper.Map<List<ItemDto>>(items));
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.ModOrAdmin)]
+    public override Task<ActionResult<ItemDto>> AddAsync(ItemDto dto)
+    {
+        return base.AddAsync(dto);
     }
 }

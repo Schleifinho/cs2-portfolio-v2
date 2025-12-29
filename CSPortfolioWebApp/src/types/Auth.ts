@@ -15,6 +15,7 @@ export interface UserDto {
     username: string;
     email: string;
     profileImageUrl: string;
+    roles: string[];
     confirmedEmail: boolean;
 }
 

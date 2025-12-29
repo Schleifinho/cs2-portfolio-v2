@@ -48,7 +48,7 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
             client.DefaultRequestHeaders.UserAgent.ParseAdd(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-            foreach (var item in asd.Content.OrderByDescending(x => x.Id).Skip(559))
+            foreach (var item in asd.Content.OrderBy(x => x.Id).Skip(0))
             {
                 string name = item.Name;
                 logger.LogInformation($"{name}");
@@ -99,7 +99,6 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
         var asd = await itemsApi.GetItemWithoutIconAsync();
         if (asd.IsSuccessful)
         {
-            logger.LogInformation($"Success");
             var handler = new HttpClientHandler
             {
                 UseCookies = true,
@@ -114,10 +113,10 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
             client.DefaultRequestHeaders.Accept.ParseAdd("text/html");
             client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
 
-            foreach (var item in asd.Content.OrderByDescending(x => x.Id).Skip(559))
+            foreach (var item in asd.Content.OrderBy(x => x.Id).Skip(0))
             {
                 string name = item.Name;
-                logger.LogInformation($"{name}");
+                logger.LogInformation($"Name: {name}");
                 string url = $"https://steamcommunity.com/market/listings/730/{name}";
                 await client.GetStreamAsync(url);
                 string html = await client.GetStringAsync(url);
@@ -150,8 +149,8 @@ public class BitSkinImporter(IItemApi itemsApi, IBitSkinsApi bitSkinApi, ILogger
                     logger.LogError($"Failed to find {name}");
                 }
 
-                break;
-                Thread.Sleep(20000);
+                //break;
+                Thread.Sleep(30000);
             }
         }
         else

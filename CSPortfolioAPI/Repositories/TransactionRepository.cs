@@ -34,7 +34,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
     
     public async Task<Result<Transaction>> AddSaleAsync(string userId, SaleDto saleDto)
     {
-        var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == saleDto.ItemId);
+        var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => 
+            x.ItemId == saleDto.ItemId
+            && x.UserId == userId);
         if (inventoryEntry == null)
         {
             return Result.Fail<Transaction>(new NotFoundError("InventoryEntry not found."));
@@ -93,7 +95,8 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         var itemIds = sales.Select(s => s.ItemId).Distinct().ToList();
 
         var inventoryEntries = await Context.InventoryEntries
-            .Where(i => itemIds.Contains(i.ItemId))
+            .Where(i => itemIds.Contains(i.ItemId)
+            && i.UserId == userId)
             .ToListAsync();
 
         // 🔹 Validate ownership & existence
@@ -174,7 +177,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         {
             var transaction = await Context.Transactions
                 .Include(transaction => transaction.InventoryEntry)
-                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Sale);
+                .FirstOrDefaultAsync(x => x.Id == id 
+                                          && x.Type == Transaction.Sale
+                                          && x.UserId == userId);
             if (transaction == null)
             {
                 return Result.Fail<Transaction>(new NotFoundError("Transaction not found."));
@@ -212,7 +217,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         {
             var transaction = await Context.Transactions
                 .Include(transaction => transaction.InventoryEntry)
-                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Sale);
+                .FirstOrDefaultAsync(x => x.Id == id 
+                                          && x.Type == Transaction.Sale
+                                          && x.UserId == userId);
             
             if (transaction == null)
             {
@@ -270,7 +277,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         await using var t = await Context.Database.BeginTransactionAsync();
         try
         {
-            var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => x.ItemId == purchaseDto.ItemId);
+            var inventoryEntry = await Context.InventoryEntries.FirstOrDefaultAsync(x => 
+                x.ItemId == purchaseDto.ItemId
+                && x.UserId == userId);
             if (inventoryEntry == null)
             {
                 inventoryEntry = new InventoryEntry()
@@ -416,7 +425,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         {
             var transaction = await Context.Transactions
                 .Include(transaction => transaction.InventoryEntry)
-                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Purchase);
+                .FirstOrDefaultAsync(x => x.Id == id 
+                                          && x.Type == Transaction.Purchase
+                                          && x.UserId == userId);
             if (transaction == null)
             {
                 return Result.Fail<Transaction>(new NotFoundError("Transaction not found."));
@@ -455,7 +466,9 @@ public class TransactionRepository(ILogger<TransactionRepository> logger, CSDbCo
         {
             var transaction = await Context.Transactions
                 .Include(x => x.InventoryEntry)
-                .FirstOrDefaultAsync(x => x.Id == id && x.Type == Transaction.Purchase);
+                .FirstOrDefaultAsync(x => x.Id == id 
+                                          && x.Type == Transaction.Purchase
+                                          && x.UserId == userId);
             if (transaction == null)
             {
                 return Result.Fail(new NotFoundError("Transaction not found."));

@@ -30,10 +30,11 @@ import {AddPurchaseDialog} from "@/components/transactions/AddPurchasesDialog.ts
 import {useTokenSearch} from "@/lib/searchbar.ts";
 import {useAuth} from "@/lib/AuthContext.tsx";
 import {ScrollArea} from "@/components/ui/scroll-area.tsx";
+import {AppRoles} from "@/types/AppRoles.ts";
 
 export function InventoryTable() {
     const queryClient = useQueryClient();
-    const { user } = useAuth();
+    const { user, hasAnyRole } = useAuth();
     const {data: inventoryEntries = [], isLoading, isError, error} =
         useQuery<InventoryEntry[]>({
             queryKey: ["inventoryEntries", user?.username],
@@ -112,7 +113,7 @@ export function InventoryTable() {
     const parentRef = useRef<HTMLDivElement>(null);
     const rowVirtualizer = useVirtualizer({
         count: sortedEntries.length,
-        getScrollElement: () => parentRef.current,
+        getScrollElement: () => parentRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement,
         estimateSize: () => 110,
         overscan: 25,
     });
@@ -170,14 +171,18 @@ export function InventoryTable() {
                 </div>
 
                 {/* Button - takes only necessary space */}
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={async () => await handlePriceRefreshAll()}
-                >
-                    <RefreshCcw className="h-4 w-4"/> Price Refresh
-                </Button>
+                {
+                    hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
+                        onClick={async () => await handlePriceRefreshAll()}
+                    >
+                        <RefreshCcw className="h-4 w-4"/> Price Refresh
+                    </Button>
+                    )
+                }
 
                 <Button
                     variant="outline"
@@ -338,14 +343,17 @@ export function InventoryTable() {
                                                 >
                                                     <DollarSign className="h-3 w-3"/>
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                                                    onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
-                                                >
-                                                    <RefreshCcw className="h-3 w-3"/>
-                                                </Button>
+                                                {
+                                                    hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                                        onClick={() => handlePriceRefresh(entry.itemId, entry.marketHashName)}
+                                                    >
+                                                        <RefreshCcw className="h-3 w-3"/>
+                                                    </Button>
+                                                    )}
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"

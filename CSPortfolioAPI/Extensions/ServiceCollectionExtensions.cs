@@ -108,8 +108,7 @@ public static class ServiceCollectionExtensions
         services.AddAuthorization(options =>
         {
             // Define a policy named "DevAllowAll"
-            const string devAllowPolicy = "DevAllowAll";
-            options.AddPolicy(devAllowPolicy, policy =>
+            options.AddPolicy(AppPolicies.DevAllowAll, policy =>
             {
                 var env = services.BuildServiceProvider().GetRequiredService<IHostEnvironment>();
                 if (env.IsDevelopment())
@@ -126,7 +125,12 @@ public static class ServiceCollectionExtensions
             });
 
             // Make "DevAllowAll" the default policy so it's applied globally
-            options.DefaultPolicy = options.GetPolicy(devAllowPolicy)!;
+            options.DefaultPolicy = options.GetPolicy(AppPolicies.DevAllowAll)!;
+            options.AddPolicy(AppPolicies.AdminOnly, policy =>
+                policy.RequireRole(AppRoles.Admin));
+
+            options.AddPolicy(AppPolicies.ModOrAdmin, policy =>
+                policy.RequireRole(AppRoles.Mod, AppRoles.Admin));
         });
         
         return services;

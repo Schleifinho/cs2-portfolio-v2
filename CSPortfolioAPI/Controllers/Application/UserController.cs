@@ -39,7 +39,7 @@ public class UserController(
         {
             return Unauthorized("User not authenticated.");
         }
-        return Ok(user.ToDto());
+        return Ok(await user.ToDtoAsync(userManager));
     }
 
     [HttpPut("change-username")]
@@ -158,6 +158,6 @@ public class UserController(
         user.ProfileImageUrl = $"/uploads/profile/{user.Id}.jpg";
         await userManager.UpdateAsync(user);
 
-        return Ok(user.ToDto());
+        return Ok(await user.ToDtoAsync(userManager));
     }
 }

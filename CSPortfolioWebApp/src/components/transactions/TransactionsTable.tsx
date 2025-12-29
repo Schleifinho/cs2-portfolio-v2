@@ -129,14 +129,14 @@ export function TransactionsTable() {
 
   const purchaseVirtualizer = useVirtualizer({
     count: filteredPurchases.length, // <- this must reflect the current data length
-    getScrollElement: () => purchaseParentRef.current,
+    getScrollElement: () => purchaseParentRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement,
     estimateSize: () => 64,
     overscan: 25,
   });
 
   const saleVirtualizer = useVirtualizer({
     count: filteredSales.length, // <- must update when switching tabs
-    getScrollElement: () => saleParentRef.current,
+    getScrollElement: () => saleParentRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement,
     estimateSize: () => 64,
     overscan: 25,
   });

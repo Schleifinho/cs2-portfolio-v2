@@ -13,6 +13,8 @@ interface AuthContextType {
     changePassword: (dto: ChangePasswordRequestDto) => Promise<void>;
     resendVerificationEmail: () => Promise<void>;
     confirmEmailVerification: (token: string) => Promise<void>;
+    hasRole: (role: string) => boolean;
+    hasAnyRole: (...roles: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,8 +76,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await authApi.sendConfirmationToken(token);
     }
 
+    const hasRole = (role: string) => {
+        return user?.roles.includes(role) ?? false;
+    };
+
+    const hasAnyRole = (...roles: string[]) => {
+        return user?.roles.some(r => roles.includes(r)) ?? false;
+    };
+
+
     return (
-        <AuthContext.Provider value={{ user, refreshUser, login, register, logout, uploadAvatar, changePassword, confirmEmailVerification, resendVerificationEmail }}>
+        <AuthContext.Provider value={{ user,
+            refreshUser,
+            login,
+            register,
+            logout,
+            uploadAvatar,
+            changePassword,
+            confirmEmailVerification,
+            resendVerificationEmail,
+            hasRole,
+            hasAnyRole}}>
             {children}
         </AuthContext.Provider>
     );
