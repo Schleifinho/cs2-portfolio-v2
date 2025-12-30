@@ -26,7 +26,7 @@ public class ItemsController(ILogger<ItemsController> logger, ItemRepository rep
         return Ok(mapper.Map<List<ItemDto>>(items));
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.ModOrAdmin)]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.CanModerate)]
     public override Task<ActionResult<ItemDto>> AddAsync(ItemDto dto)
     {
         return base.AddAsync(dto);

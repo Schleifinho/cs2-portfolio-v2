@@ -39,7 +39,7 @@ public class AuthController(
         
         await userManager.AddToRoleAsync(user, AppRoles.NoEmailVerification);
         
-        var token = jwtTokenHandler.GenerateJwtTokenForUser(user);
+        var token = await jwtTokenHandler.GenerateJwtTokenForUser(user);
         Response.Cookies.Append("jwt", token, new CookieOptions
         {
             HttpOnly = true,
@@ -70,7 +70,7 @@ public class AuthController(
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials");
 
-        var token = jwtTokenHandler.GenerateJwtTokenForUser(user);
+        var token = await jwtTokenHandler.GenerateJwtTokenForUser(user);
         Response.Cookies.Append("jwt", token, new CookieOptions
         {
             HttpOnly = true,

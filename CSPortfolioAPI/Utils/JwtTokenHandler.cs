@@ -3,12 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using CSPortfolioAPI.Models;
 using CSPortfolioAPI.Options;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CSPortfolioAPI.Utils;
 
-public class JwtTokenHandler(IOptions<JwtOptions> options)
+public class JwtTokenHandler(IOptions<JwtOptions> options, UserManager<User> userManager)
 {
     private readonly string _key = options.Value.SecretKey;
     private readonly string _issuer = options.Value.Issuer;
@@ -21,21 +22,28 @@ public class JwtTokenHandler(IOptions<JwtOptions> options)
     /* ===========================
      * AUTH TOKEN (LOGIN)
      * =========================== */
-    public string GenerateJwtTokenForUser(User user)
+    public async Task<string> GenerateJwtTokenForUser(User user)
     {
-        var claims = new[]
+        var roles = await userManager.GetRolesAsync(user);
+
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.Name, user.UserName!)
         };
+
+        // 🔴 THIS IS THE MISSING PART
+        claims.AddRange(roles.Select(role =>
+            new Claim(ClaimTypes.Role, role)));
 
         return GenerateToken(
             claims,
             DateTime.UtcNow.AddDays(_expireDays)
         );
     }
+
     
     /* ===========================
      * EMAIL VERIFICATION TOKEN

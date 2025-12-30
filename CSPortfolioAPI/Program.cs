@@ -73,7 +73,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddPostgresDbServices(builder.Configuration);
 builder.Services.AddRepositoryServices();
-builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration, builder.Environment);
 
 builder.Services.AddCors(options =>
 {

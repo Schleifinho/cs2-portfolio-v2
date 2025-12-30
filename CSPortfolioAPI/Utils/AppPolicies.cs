@@ -3,6 +3,7 @@
 public class AppPolicies
 {
     public const string DevAllowAll  = nameof(DevAllowAll);
-    public const string AdminOnly  = nameof(AdminOnly);
-    public const string ModOrAdmin = nameof(ModOrAdmin);
+    public const string CanRead  = nameof(CanRead);
+    public const string CanModerate = nameof(CanModerate);
+    public const string CanAdmin  = nameof(CanAdmin);
 }

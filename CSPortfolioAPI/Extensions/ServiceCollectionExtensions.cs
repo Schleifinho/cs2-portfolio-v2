@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Claims;
+using System.Text;
 using CSPortfolioAPI.Contracts;
 using CSPortfolioAPI.Models;
 using CSPortfolioAPI.Options;
@@ -56,7 +57,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
     
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
     {
         var jwtOptions = configuration
             .GetRequiredSection("Jwt")
@@ -94,6 +95,8 @@ public static class ServiceCollectionExtensions
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = ClaimTypes.NameIdentifier,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
@@ -101,7 +104,7 @@ public static class ServiceCollectionExtensions
                 ValidAudience = jwtOptions.Audience, // Set this in appsettings.json
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey)) 
+                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey)), 
             };
         });
 
@@ -110,7 +113,6 @@ public static class ServiceCollectionExtensions
             // Define a policy named "DevAllowAll"
             options.AddPolicy(AppPolicies.DevAllowAll, policy =>
             {
-                var env = services.BuildServiceProvider().GetRequiredService<IHostEnvironment>();
                 if (env.IsDevelopment())
                 {
                     // Always succeed in dev
@@ -124,13 +126,19 @@ public static class ServiceCollectionExtensions
                 }
             });
 
+            options.AddPolicy(AppPolicies.CanRead, p =>
+                p.RequireAuthenticatedUser());
+
+            options.AddPolicy(AppPolicies.CanModerate, p =>
+                p.RequireAssertion(c =>
+                    c.User.IsInRole(AppRoles.Mod) ||
+                    c.User.IsInRole(AppRoles.Admin)));
+
+            options.AddPolicy(AppPolicies.CanAdmin, p =>
+                p.RequireRole(AppRoles.Admin));
+            
             // Make "DevAllowAll" the default policy so it's applied globally
             options.DefaultPolicy = options.GetPolicy(AppPolicies.DevAllowAll)!;
-            options.AddPolicy(AppPolicies.AdminOnly, policy =>
-                policy.RequireRole(AppRoles.Admin));
-
-            options.AddPolicy(AppPolicies.ModOrAdmin, policy =>
-                policy.RequireRole(AppRoles.Mod, AppRoles.Admin));
         });
         
         return services;

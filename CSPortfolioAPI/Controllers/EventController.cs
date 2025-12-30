@@ -13,7 +13,7 @@ public class EventController(ILogger<EventController> logger,
     PriceUpdateEventProducer updateEventProducer,
     InventoryEntryRepository inventoryEntryRepository) : ControllerBase, IEventApi
 {
-    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.ModOrAdmin)]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.CanModerate)]
     [HttpPost("priceupdate")]
     public async Task<ActionResult<bool>> SendPriceUpdateAsync([Body] PriceUpdateEvent priceUpdateEvent)
     {
@@ -22,7 +22,7 @@ public class EventController(ILogger<EventController> logger,
         return true;
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.ModOrAdmin)]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy = AppPolicies.CanModerate)]
     [HttpGet("priceupdate/all")]
     public async Task<ActionResult<int>> PublishAllAsync()
     {
