@@ -46,7 +46,7 @@ export const Profile = () => {
                 {/* AVATAR */}
                 <div className="relative shrink-0 ">
                     <img
-                        src={`${import.meta.env.VITE_BACKEND_URL}${user.profileImageUrl}?v=${Date.now()}`}
+                        src={`${user.profileImageUrl}?v=${Date.now()}`}
                         alt={user.username?.[0]?.toUpperCase()}
                         className="h-32 w-32 rounded-full border object-cover"
                     />

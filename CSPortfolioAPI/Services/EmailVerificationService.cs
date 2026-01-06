@@ -5,7 +5,8 @@ namespace CSPortfolioAPI.Services;
 
 public sealed class EmailVerificationService(
     IEmailService emailService,
-    IConfiguration config)
+    IConfiguration config,
+    ILogger<EmailVerificationService> logger)
 {
     public async Task SendVerificationEmailAsync(User user, string token)
     {
@@ -33,7 +34,7 @@ public sealed class EmailVerificationService(
                             </p>
                         </div>
                     """;
-
+        
         await emailService.SendAsync(
             user.Email,
             user.UserName,

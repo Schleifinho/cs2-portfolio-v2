@@ -1,10 +1,11 @@
 ﻿services:
 
   csportfolioapi:
-    image: mschleifer/csportfolioapi:0.0.1
+    image: mschleifer/csportfolioapi:0.0.5
     build:
       context: .
       dockerfile: CSPortfolioAPI/Dockerfile
+    container_name: csportfolioapi
     ports:
       - "4000:8080"
     environment:
@@ -15,7 +16,7 @@
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
-      MassTransitConnectionStrings__DefaultConnection: ${MASSTRANSITCONNECTIONSTRINGS__DEFAULTCONNECTION}
+      ConnectionStrings__MassTransitConnection: ${MASSTRANSITCONNECTIONSTRINGS__DEFAULTCONNECTION}
       RabbitMqConnectionSettings__Username: ${RABBITMQ_USER}
       RabbitMqConnectionSettings__Password: ${RABBITMQ_PASSWORD}
       Jwt__SecretKey: ${JWT_SECRET_KEY}
@@ -35,9 +36,13 @@
         restart: true
       redis:
         condition: service_started
+      masstransit-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
         
   csportfolio-web-app:
-    image: mschleifer/csportfolio-web-app:0.0.1
+    image: mschleifer/csportfolio-web-app:0.0.4
     build:
       context: ./CSPortfolioWebApp   # subfolder is the build context
       dockerfile: Dockerfile         # Dockerfile inside subfolder
@@ -50,7 +55,7 @@
         restart: true
 
   csitemimporter:
-    image: mschleifer/csitemimporter:0.0.1
+    image: mschleifer/csitemimporter:0.0.4
     build:
       context: .
       dockerfile: CSItemImporter/Dockerfile    
@@ -61,7 +66,7 @@
         condition: service_started
         
   cspriceupdater:
-    image: mschleifer/cspriceupdater:0.0.1
+    image: mschleifer/cspriceupdater:0.0.4
     build:
       context: .
       dockerfile: CSPriceUpdater/Dockerfile
@@ -79,7 +84,7 @@
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAMED}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -129,6 +134,19 @@
       - POSTGRES_INITDB_ARGS="--encoding=UTF8"
     ports:
       - "45432:5432"
+        
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./CSPortfolioAPI/wwwroot/uploads:/usr/share/nginx/html/uploads:ro
+    depends_on:
+      - csportfolio-web-app
+      - csportfolioapi
   #endregion
 
 #region Volumes

@@ -109,7 +109,7 @@ export default function SingleTransactionTable({
                                                         />
                                                     ) : (
                                                         <img
-                                                            src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg`}
+                                                            src={`/uploads/profile/default.jpg?v=${Date.now()}`}
                                                             alt={tx.name}
                                                             className="h-20 w-20 rounded object-contain border"
                                                         />

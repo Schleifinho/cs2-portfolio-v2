@@ -72,3 +72,4 @@ deploy/
 # ------------------------
 CSPortfolioAPI/appsettings.Development.json
 .env
+.env.*

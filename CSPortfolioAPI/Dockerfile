@@ -21,6 +21,8 @@ COPY LocalNuGets/ LocalNuGets/
 # ---- Copy project files first (restore cache) ----
 COPY CSPortfolioAPI/CSPortfolioAPI.csproj CSPortfolioAPI/
 COPY CSPortfolioLib/CSPortfolioLib.csproj CSPortfolioLib/
+# Ensure SQL files are included
+COPY CSPortfolioAPI/Sql CSPortfolioAPI/Sql
 
 # ---- Restore (Docker sees central props now) ----
 RUN dotnet restore CSPortfolioAPI/CSPortfolioAPI.csproj

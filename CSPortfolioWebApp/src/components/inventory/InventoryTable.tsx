@@ -273,7 +273,7 @@ export function InventoryTable() {
                                                 )}
                                                 {!entry.iconUrl && (
                                                     <img
-                                                        src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
+                                                        src={`/uploads/profile/default.jpg?v=${Date.now()}`}
                                                         alt={entry.name}
                                                         className="h-20 w-20 rounded object-contain border border-border"
                                                     />

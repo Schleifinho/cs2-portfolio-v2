@@ -178,7 +178,7 @@ export function ItemsTable() {
                                 />
                             ) : (
                                 <img
-                                    src={`${import.meta.env.VITE_BACKEND_URL}uploads/profile/default.jpg?v=${Date.now()}`}
+                                    src={`/uploads/profile/default.jpg?v=${Date.now()}`}
                                     alt={item.name}
                                     className="h-20 w-20 rounded object-contain border border-border"
                                     loading="lazy"

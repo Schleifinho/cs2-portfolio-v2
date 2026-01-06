@@ -1,0 +1,4 @@
+﻿services:
+  csportfolioapi:
+    environment:
+      Brevo__FrontendUrl: http://localhost

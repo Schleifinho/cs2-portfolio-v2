@@ -39,7 +39,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.AddServer(new OpenApiServer
     {
-        Url = builder.Configuration["Swagger:ServerUrl"] ?? "http://localhost:4000"
+        Url = "/"
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -73,18 +73,6 @@ builder.Services.AddControllers();
 builder.Services.AddPostgresDbServices(builder.Configuration);
 builder.Services.AddRepositoryServices();
 builder.Services.AddIdentityServices(builder.Configuration, builder.Environment);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy => policy
-            .WithOrigins("http://localhost:4040")
-            .WithOrigins("http://localhost:8080")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
-});
-
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddRabbitMQProducer(builder.Configuration, 
     cfg => cfg.AddScoped<PriceUpdateEventProducer>());
@@ -128,37 +116,45 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+
+    // Trust all proxies (Docker / LAN)
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+#endregion
+
 #region Run APP
 var app = builder.Build();
 Console.WriteLine($"Running {app.Environment.EnvironmentName}");
-
-#endregion
-
+//Before routing/auth
+app.UseForwardedHeaders();
 app.UseStaticFiles();
 
-app.UseCors("AllowFrontend");
-app.UseRateLimiter();
-
-app.UseHttpsRedirection();
-// Make sure we don't have cookie authentication enabled by accident
 app.UseRouting();
+
+app.UseRateLimiter();
 app.UseMiddleware<JwtCookieMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+app.UseRateLimiter();
+
+app.UseHttpsRedirection();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseForwardedHeaders(new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-    });
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        // Point to Swashbuckle’s JSON instead of /openapi/v1.json
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CSPortfolio API v1");
     });
 }

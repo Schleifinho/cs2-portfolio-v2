@@ -75,7 +75,7 @@ export function Sidebar({onLogout, activeTab, onTabChange }: SidebarProps) {
                                   : "bg-secondary hover:bg-secondary/80"
                           )}
                       >
-                        <img src={`${import.meta.env.VITE_BACKEND_URL}${user.profileImageUrl}?v=${Date.now()}`}
+                        <img src={`${user.profileImageUrl}?v=${Date.now()}`}
                              alt={user.username?.[0]?.toUpperCase()}
                              className="h-10 w-10 rounded-full object-cover"/>
 

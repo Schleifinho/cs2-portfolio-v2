@@ -30,7 +30,7 @@ public sealed class EmailVerificationController(
 
         if (user.EmailConfirmed)
             return BadRequest("Email already verified");
-        
+
         if (user.LastVerificationEmailSentAt.HasValue &&
             DateTime.UtcNow - user.LastVerificationEmailSentAt < VerificationCooldown)
         {
@@ -42,7 +42,7 @@ public sealed class EmailVerificationController(
                 new { retryAfterSeconds = (int)retryAfter.TotalSeconds }
             );
         }
-
+        
         var token = tokenService.GenerateEmailVerificationToken(user.Id);
         await emailService.SendVerificationEmailAsync(user, token);
 
