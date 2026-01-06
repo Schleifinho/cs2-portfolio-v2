@@ -1,24 +1,29 @@
 ﻿services:
 
   csportfolioapi:
-    image: csportfolioapi
+    image: mschleifer/csportfolioapi:0.0.1
     build:
       context: .
       dockerfile: CSPortfolioAPI/Dockerfile
     ports:
       - "4000:8080"
     environment:
-      DB_USER: csapi
-      DB_PASSWORD: secretpass
-      DB_NAME: csportfolio
-      DB_HOST: cs-db
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      ConnectionStrings__DefaultConnection: Host=cs-db;Port=5432;Database=csportfolio;Username=csapi;Password=secretpass
-      MassTransitConnectionStrings__DefaultConnection: Host=masstransit-db;Port=5432;Database=masstransit;Username=root;Password=root
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
+      MassTransitConnectionStrings__DefaultConnection: ${MASSTRANSITCONNECTIONSTRINGS__DEFAULTCONNECTION}
+      RabbitMqConnectionSettings__Username: ${RABBITMQ_USER}
+      RabbitMqConnectionSettings__Password: ${RABBITMQ_PASSWORD}
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      Brevo__ApiKey: ${BREVO_API_KEY}
     volumes:
       - ./CSPortfolioAPI/wwwroot/uploads:/app/wwwroot/uploads
     user: root
+    restart: unless-stopped
     command: >
         sh -c "
         chown -R ${APP_UID}:${APP_UID} /app/wwwroot/uploads &&
@@ -32,6 +37,7 @@
         condition: service_started
         
   csportfolio-web-app:
+    image: mschleifer/csportfolio-web-app:0.0.1
     build:
       context: ./CSPortfolioWebApp   # subfolder is the build context
       dockerfile: Dockerfile         # Dockerfile inside subfolder
@@ -44,19 +50,25 @@
         restart: true
 
   csitemimporter:
-    image: csitemimporter
+    image: mschleifer/csitemimporter:0.0.1
     build:
       context: .
-      dockerfile: CSItemImporter/Dockerfile
+      dockerfile: CSItemImporter/Dockerfile    
+    environment:
+      MassTransitConnectionStrings__DefaultConnection: ${MASSTRANSITCONNECTIONSTRINGS__DEFAULTCONNECTION}
     depends_on:
       csportfolioapi:
         condition: service_started
         
   cspriceupdater:
-    image: cspriceupdater
+    image: mschleifer/cspriceupdater:0.0.1
     build:
       context: .
       dockerfile: CSPriceUpdater/Dockerfile
+    environment:
+      MassTransitConnectionStrings__DefaultConnection: ${MASSTRANSITCONNECTIONSTRINGS__DEFAULTCONNECTION}
+      RabbitMqConnectionSettings__Username: ${RABBITMQ_USER}
+      RabbitMqConnectionSettings__Password: ${RABBITMQ_PASSWORD}
     depends_on:
       csportfolioapi:
         condition: service_started
@@ -65,9 +77,9 @@
     image: timescale/timescaledb:latest-pg16
     container_name: csportfolio-db
     environment:
-      POSTGRES_USER: csapi
-      POSTGRES_PASSWORD: secretpass
-      POSTGRES_DB: csportfolio
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAMED}
     ports:
       - "5432:5432"
     volumes:
@@ -89,8 +101,8 @@
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     healthcheck:
       test: [ "CMD", "rabbitmqctl", "ping" ]
       interval: 10s
@@ -111,9 +123,9 @@
     volumes:
       - masstransit_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=masstransit
+      - POSTGRES_USER=${MASSTRANSIT_DB_USER}
+      - POSTGRES_PASSWORD=${MASSTRANSIT_DB_PASSWORD}
+      - POSTGRES_DB=${MASSTRANSIT_DB_NAME}
       - POSTGRES_INITDB_ARGS="--encoding=UTF8"
     ports:
       - "45432:5432"

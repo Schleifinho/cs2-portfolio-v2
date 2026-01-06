@@ -1,6 +1,5 @@
 using System.Threading.RateLimiting;
 using brevo_csharp.Api;
-using brevo_csharp.Client;
 using CSPortfolioAPI.Contracts;
 using CSPortfolioAPI.Extensions;
 using CSPortfolioAPI.Middlewares;
@@ -10,12 +9,20 @@ using CSPortfolioAPI.Services;
 using CSPortfolioAPI.Utils;
 using CSPortfolioLib.Producers;
 using MessageBrokerLib.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Configuration
+
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -23,18 +30,6 @@ builder.Services.AddOpenApi();
 // Add controller support
 builder.Services.AddSwaggerGen(options =>
 {
-    // This loads configuration in this order:
-    builder.Configuration
-        .SetBasePath(builder.Environment.ContentRootPath)
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-        .AddEnvironmentVariables();
-    
-    // Advertise the externally reachable host:port
-    options.AddServer(new OpenApiServer
-    {
-        Url = "http://localhost:4000"
-    });
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "CS Portfolio API",
@@ -42,16 +37,20 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API documentation for PUBG Fantasy League",
     });
 
-    // Define the Bearer auth scheme
+    options.AddServer(new OpenApiServer
+    {
+        Url = builder.Configuration["Swagger:ServerUrl"] ?? "http://localhost:4000"
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer", // IMPORTANT: lowercase "bearer" enables auto prefix
+        Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description =
-            "Enter your JWT token. **Do not include 'Bearer '** prefix. It will be added automatically."
+            "Enter your JWT token. Do NOT include 'Bearer ' prefix."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -152,6 +151,10 @@ app.MapControllers();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    });
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {

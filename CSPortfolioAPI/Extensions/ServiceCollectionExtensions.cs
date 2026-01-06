@@ -71,17 +71,33 @@ public static class ServiceCollectionExtensions
         });
         
         services.AddScoped<JwtTokenHandler>();
-        
-        services.Configure<IdentityOptions>(options =>
+        if (env.IsDevelopment())
         {
-            // Password settings
-            options.Password.RequireDigit = false; // Require at least one digit
-            options.Password.RequireLowercase = true; // Require at least one lowercase letter
-            options.Password.RequireUppercase = false; // Require at least one uppercase letter
-            options.Password.RequireNonAlphanumeric = false; // Don't require special characters
-            options.Password.RequiredLength = 2; // Minimum password length
-            options.Password.RequiredUniqueChars = 1; // Minimum unique characters
-        });
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Password settings
+                options.Password.RequireDigit = false; // Require at least one digit
+                options.Password.RequireLowercase = true; // Require at least one lowercase letter
+                options.Password.RequireUppercase = false; // Require at least one uppercase letter
+                options.Password.RequireNonAlphanumeric = false; // Don't require special characters
+                options.Password.RequiredLength = 2; // Minimum password length
+                options.Password.RequiredUniqueChars = 1; // Minimum unique characters
+            });
+        }
+        else
+        {
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Password settings
+                options.Password.RequireDigit = true; // Require at least one digit
+                options.Password.RequireLowercase = true; // Require at least one lowercase letter
+                options.Password.RequireUppercase = false; // Require at least one uppercase letter
+                options.Password.RequireNonAlphanumeric = false; // Don't require special characters
+                options.Password.RequiredLength = 8; // Minimum password length
+                options.Password.RequiredUniqueChars = 3; // Minimum unique characters
+            });
+        }
+
 
         services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<CSDbContext>()

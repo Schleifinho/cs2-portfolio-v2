@@ -71,3 +71,4 @@ deploy/
 # Privates
 # ------------------------
 CSPortfolioAPI/appsettings.Development.json
+.env
