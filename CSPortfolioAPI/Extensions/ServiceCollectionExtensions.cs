@@ -97,8 +97,6 @@ public static class ServiceCollectionExtensions
                 options.Password.RequiredUniqueChars = 3; // Minimum unique characters
             });
         }
-
-
         services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<CSDbContext>()
             .AddDefaultTokenProviders();
@@ -152,9 +150,6 @@ public static class ServiceCollectionExtensions
 
             options.AddPolicy(AppPolicies.CanAdmin, p =>
                 p.RequireRole(AppRoles.Admin));
-            
-            // Make "DevAllowAll" the default policy so it's applied globally
-            options.DefaultPolicy = options.GetPolicy(AppPolicies.DevAllowAll)!;
         });
         
         return services;
