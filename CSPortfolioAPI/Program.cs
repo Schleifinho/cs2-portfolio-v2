@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using brevo_csharp.Api;
 using CSPortfolioAPI.Contracts;
@@ -144,10 +145,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseRateLimiter();
 
 app.UseHttpsRedirection();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

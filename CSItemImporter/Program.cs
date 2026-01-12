@@ -29,7 +29,7 @@ public static class Program
         builder.Services.AddScoped<ImportItemService>();
         builder.Services.AddScoped<BitSkinImporter>();
 
-        builder.Services.AddSteamRefitClient<IBitSkinsApi>();
+        builder.Services.AddBitSkinRefitClient<IBitSkinsApi>();
 
         // Add background worker
         builder.Services.AddHostedService<ImportWorker>();

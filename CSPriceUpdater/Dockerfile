@@ -16,7 +16,7 @@ WORKDIR "/src/CSPriceUpdater"
 RUN dotnet publish "CSPriceUpdater.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
 # Copy published app

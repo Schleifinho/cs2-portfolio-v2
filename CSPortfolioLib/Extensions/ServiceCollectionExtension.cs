@@ -41,6 +41,20 @@ public static class ServiceCollectionExtension
         services.AddRefitClient<T>()
             .ConfigureHttpClient((sp, c) =>
             {
+                var settings = sp.GetRequiredService<IOptions<ApiSettings>>().Value;
+                c.BaseAddress = new Uri(settings.SteamUrl);
+                c.Timeout = TimeSpan.FromSeconds(settings.Timeout); 
+            });
+        
+        return services;
+    }
+    
+    public static IServiceCollection AddBitSkinRefitClient<T>(
+        this IServiceCollection services) where T : class
+    {
+        services.AddRefitClient<T>()
+            .ConfigureHttpClient((sp, c) =>
+            {
                 var settings = sp.GetRequiredService<IOptions<BitSkinSettings>>().Value;
                 c.BaseAddress = new Uri(settings.BaseUrl);
                 c.Timeout = TimeSpan.FromSeconds(settings.TimeoutInSeconds); 
