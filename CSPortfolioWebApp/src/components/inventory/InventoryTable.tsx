@@ -59,8 +59,8 @@ export function InventoryTable() {
 
   const filteredEntries = useTokenSearch(inventoryEntries.filter(s => s.quantity > 0), search, (s) => s.name);
 
-  const [sortKey, setSortKey] = useState<keyof InventoryEntry | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortKey, setSortKey] = useState<keyof InventoryEntry | null>("trend");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const handleSort = (key: keyof InventoryEntry) => {
     if (sortKey === key) {

@@ -12,8 +12,8 @@ import {
   Edit,
   Trash,
   ShoppingCart,
-  ChevronUp,
-  ChevronDown,
+  ArrowUp,
+  ArrowDown,
   X
 } from "lucide-react";
 import {AddItemDialog} from "@/components/items/AddItemsDialog";
@@ -98,8 +98,8 @@ export function ItemsTable() {
 
   const SortIcon = ({column}: { column: string }) => {
     if (sortKey !== column) return <ArrowUpDown className="h-3 w-3 opacity-30 ml-1"/>;
-    return sortOrder === "asc" ? <ChevronUp className="h-3 w-3 ml-1 text-primary"/> :
-      <ChevronDown className="h-3 w-3 ml-1 text-primary"/>;
+    return sortOrder === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary"/> :
+      <ArrowDown className="h-3 w-3 ml-1 text-primary"/>;
   };
 
   if (isLoading) return <div className="p-8 text-center animate-pulse text-muted-foreground">Indexing Global
@@ -108,7 +108,7 @@ export function ItemsTable() {
     Error: {(error as Error).message}</div>;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col flex-1 min-h-0 w-full overflow-hidden space-y-4">
 
       {/* HEADER SECTION */}
       <div className="flex flex-col gap-4 shrink-0 px-1">
@@ -155,7 +155,7 @@ export function ItemsTable() {
           </div>
           <div
             className={`${COL_WIDTHS.actions} text-right uppercase text-[10px] font-black tracking-widest text-muted-foreground/70`}>
-            Operations
+            Actions
           </div>
         </div>
 
@@ -240,15 +240,15 @@ export function ItemsTable() {
 
                     <div className="flex gap-2 pt-1">
                       <Button
-                        variant="default"
+                        variant="secondary"
                         size="sm"
-                        className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-md bg-primary hover:bg-primary/90"
+                        className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-md"
                         onClick={() => {
                           setSelectedItemId(item.id);
                           setPurchaseDialogOpen(true);
                         }}
                       >
-                        <ShoppingCart className="h-3.5 w-3.5"/> Buy Asset
+                        <ShoppingCart className="h-3.5 w-3.5"/>Add Purchase
                       </Button>
 
                       {hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (

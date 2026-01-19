@@ -91,7 +91,7 @@ export function AddItemDialog({ item, open: controlledOpen, onOpenChange }: AddI
             <DialogTrigger asChild>
                 <Button className="w-full md:w-auto bg-primary text-primary-foreground hover:opacity-90 shadow-md h-10 md:h-9 px-4 gap-2 text-[10px] font-black uppercase tracking-widest transition-all">
                     <Plus className="h-4 w-4" />
-                    Add New Asset
+                    Add New Item
                 </Button>
             </DialogTrigger>
           )}

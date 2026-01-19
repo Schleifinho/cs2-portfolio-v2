@@ -1,120 +1,271 @@
-﻿import { ArrowUpDown, Edit, Trash, ArrowUp, ArrowDown } from "lucide-react";
+﻿import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Edit,
+  Trash,
+  Calendar,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {useEffect} from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-// Define column width constants to ensure Header and Body stay perfectly aligned
 const COL_WIDTHS = {
   item: "w-[35%]",
   qty: "w-[10%]",
   price: "w-[15%]",
   total: "w-[15%]",
   date: "w-[15%]",
-  actions: "w-[10%]"
+  actions: "w-[10%]",
 };
 
-export default function SingleTransactionTable({data,
+export default function SingleTransactionTable({
+                                                 data,
                                                  parentRef,
                                                  virtualizer,
                                                  onSort,
                                                  onEdit,
                                                  onDelete,
-                                                 sortKey,   // Pass current sort state down for icons
+                                                 sortKey,
                                                  sortOrder,
                                                }: any) {
 
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    virtualizer.measure();
+    virtualizer.scrollToIndex(0);
+  }, [data.length]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      requestAnimationFrame(() => {
+        virtualizer.measure();
+        virtualizer.scrollToIndex(0);
+      });
+    }
+  }, [isMobile, data.length, sortKey, sortOrder]);
+
   const SortIcon = ({ column }: { column: string }) => {
-    if (sortKey !== column) return <ArrowUpDown className="h-3 w-3 opacity-30 ml-1" />;
-    return sortOrder === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary" /> : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
+    if (sortKey !== column)
+      return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
+
+    return sortOrder === "asc" ? (
+      <ArrowUp className="h-3 w-3 ml-1 text-primary" />
+    ) : (
+      <ArrowDown className="h-3 w-3 ml-1 text-primary" />
+    );
   };
 
   return (
-    <div className="flex flex-col h-full w-full min-w-0 overflow-hidden">
+    <div className="flex flex-col h-full w-full min-w-0 overflow-hidden bg-card">
 
-      {/* 🔹 FIXED HEADER */}
-      {/* pr-4 accounts for the scrollbar width in the body below */}
-      <div className="bg-muted/5 border-b shrink-0 pr-4">
-        <div className="flex w-full items-center px-4 py-3">
-          <div onClick={() => onSort("name")} className={`${COL_WIDTHS.item} cursor-pointer flex items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
-            Item <SortIcon column="name" />
+      {/* ───────────────── DESKTOP HEADER ───────────────── */}
+      <div className="hidden md:block shrink-0 border-b bg-muted/5">
+        <div className="flex items-center px-6 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          <div
+            onClick={() => onSort("name")}
+            className={`${COL_WIDTHS.item} flex items-center cursor-pointer`}
+          >
+            Asset <SortIcon column="name" />
           </div>
-          <div onClick={() => onSort("quantity")} className={`${COL_WIDTHS.qty} cursor-pointer flex justify-center items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
+          <div
+            onClick={() => onSort("quantity")}
+            className={`${COL_WIDTHS.qty} flex justify-center cursor-pointer`}
+          >
             Qty <SortIcon column="quantity" />
           </div>
-          <div onClick={() => onSort("price")} className={`${COL_WIDTHS.price} cursor-pointer flex justify-center items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
+          <div
+            onClick={() => onSort("price")}
+            className={`${COL_WIDTHS.price} flex justify-center cursor-pointer`}
+          >
             Price <SortIcon column="price" />
           </div>
-          <div onClick={() => onSort("total")} className={`${COL_WIDTHS.total} cursor-pointer flex justify-center items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
+          <div
+            onClick={() => onSort("total")}
+            className={`${COL_WIDTHS.total} flex justify-center cursor-pointer`}
+          >
             Total <SortIcon column="total" />
           </div>
-          <div onClick={() => onSort("timestamp")} className={`${COL_WIDTHS.date} cursor-pointer flex justify-center items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
+          <div
+            onClick={() => onSort("timestamp")}
+            className={`${COL_WIDTHS.date} flex justify-center cursor-pointer`}
+          >
             Date <SortIcon column="timestamp" />
           </div>
-          <div className={`${COL_WIDTHS.actions} text-right uppercase text-[10px] font-black tracking-widest text-muted-foreground`}>
-            Actions
-          </div>
+          <div className={`${COL_WIDTHS.actions} text-right`}>Actions</div>
         </div>
       </div>
 
-      {/* 🔹 VIRTUALIZED BODY */}
-      <ScrollArea
-        ref={parentRef}
-        className="flex-1 w-full"
-      >
-        <div className="w-full relative">
-          {/* Top spacer */}
-          <div style={{ height: virtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+      {/* ───────────────── DESKTOP (VIRTUALIZED) ───────────────── */}
+      <div className="hidden md:block flex-1 min-h-0">
+        <ScrollArea ref={parentRef} className="h-full">
+          <div className="relative w-full">
 
-          {virtualizer.getVirtualItems().map((row: any) => {
-            const tx = data[row.index];
-            if (!tx) return null;
-            return (
+            <div style={{ height: virtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+
+            {virtualizer.getVirtualItems().map((row: any) => {
+              const tx = data[row.index];
+              if (!tx) return null;
+
+              return (
+                <div
+                  key={tx.id}
+                  style={{ height: row.size }}
+                  className="border-b last:border-0"
+                >
+                  <div className="flex items-center px-6 h-full hover:bg-muted/20 group">
+
+                    {/* Asset */}
+                    <div className={`${COL_WIDTHS.item} flex items-center gap-3 min-w-0`}>
+                      <div className="h-10 w-10 shrink-0 rounded-lg bg-muted/20 border flex items-center justify-center">
+                        <img
+                          src={
+                            tx.iconUrl
+                              ? `https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}`
+                              : "/default.jpg"
+                          }
+                          className="h-8 w-8 object-contain"
+                          alt={tx.name}
+                        />
+                      </div>
+                      <span className="truncate font-bold text-sm">
+                        {tx.name}
+                      </span>
+                    </div>
+
+                    {/* Qty */}
+                    <div className={`${COL_WIDTHS.qty} flex justify-center`}>
+                      <Badge className="h-5 px-2 text-[10px] font-mono">
+                        {tx.quantity}x
+                      </Badge>
+                    </div>
+
+                    {/* Price */}
+                    <div className={`${COL_WIDTHS.price} flex justify-center text-sm`}>
+                      {tx.price.toFixed(2)}€
+                    </div>
+
+                    {/* Total */}
+                    <div className={`${COL_WIDTHS.total} flex justify-center font-black text-primary`}>
+                      {(tx.quantity * tx.price).toFixed(2)}€
+                    </div>
+
+                    {/* Date */}
+                    <div className={`${COL_WIDTHS.date} flex justify-center text-[11px] font-mono text-muted-foreground`}>
+                      {new Date(tx.timestamp).toLocaleDateString()}
+                    </div>
+
+                    {/* Actions */}
+                    <div className={`${COL_WIDTHS.actions} flex justify-end gap-1 opacity-0 group-hover:opacity-100`}>
+                      <Button size="icon" variant="ghost" onClick={() => onEdit(tx)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-red-500"
+                        onClick={() => onDelete(tx.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+
+            <div
+              style={{
+                height:
+                  virtualizer.getTotalSize() -
+                  (virtualizer.getVirtualItems().at(-1)?.end ?? 0),
+              }}
+            />
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* ───────────────── MOBILE (NOT VIRTUALIZED) ───────────────── */}
+      <div className="md:hidden flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <div className="flex flex-col gap-3 p-3">
+
+            {data.map((tx: any) => (
               <div
                 key={tx.id}
-                className="flex w-full items-center px-4 hover:bg-muted/30 transition-colors group border-b border-border/40"
-                style={{ height: row.size }}
+                className="border rounded-lg p-3 bg-card space-y-3"
               >
-                <div className={`${COL_WIDTHS.item} flex items-center gap-3 min-w-0`}>
-                  <div className="h-10 w-10 shrink-0 bg-muted/20 rounded border flex items-center justify-center overflow-hidden">
-                    <img src={tx.iconUrl ? `https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}` : "/default.jpg"} className="h-8 w-8 object-contain" alt={tx.name} />
+                {/* Header */}
+                <div className="flex gap-3 items-center">
+                  <div className="h-14 w-14 shrink-0 rounded-lg bg-muted/20 border flex items-center justify-center">
+                    <img
+                      src={
+                        tx.iconUrl
+                          ? `https://community.fastly.steamstatic.com/economy/image/${tx.iconUrl}`
+                          : "/default.jpg"
+                      }
+                      className="h-10 w-10 object-contain"
+                      alt={tx.name}
+                    />
                   </div>
-                  <span className="text-sm font-bold truncate tracking-tight">{tx.name}</span>
-                </div>
-
-                <div className={`${COL_WIDTHS.qty} flex justify-center`}>
-                  <Badge variant="secondary" className="font-mono font-bold text-[10px] px-1.5 h-5">{tx.quantity}x</Badge>
-                </div>
-
-                <div className={`${COL_WIDTHS.price} flex justify-center`}>
-                  <span className="text-sm font-medium tabular-nums">{tx.price.toFixed(2)}€</span>
-                </div>
-
-                <div className={`${COL_WIDTHS.total} flex justify-center`}>
-                  <span className="text-sm font-black tabular-nums text-primary">{(tx.quantity * tx.price).toFixed(2)}€</span>
-                </div>
-
-                <div className={`${COL_WIDTHS.date} flex justify-center`}>
-                  <span className="text-[11px] font-bold text-muted-foreground">{new Date(tx.timestamp).toLocaleDateString()}</span>
-                </div>
-
-                <div className={`${COL_WIDTHS.actions} flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}>
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => onEdit(tx)}>
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-500/10" onClick={() => onDelete(tx.id!)}>
-                      <Trash className="h-3.5 w-3.5" />
-                    </Button>
+                  <div className="min-w-0">
+                    <div className="font-black text-sm">{tx.name}</div>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(tx.timestamp).toLocaleDateString()}
+                    </div>
                   </div>
+                </div>
+
+                {/* Metrics */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-[9px] uppercase font-black text-muted-foreground">
+                      Total
+                    </div>
+                    <div className="font-black text-primary">
+                      {(tx.quantity * tx.price).toFixed(2)}€
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] uppercase font-black text-muted-foreground">
+                      Unit
+                    </div>
+                    <div>
+                      {tx.price.toFixed(2)}€ × {tx.quantity}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <Button
+                    variant="secondary"
+                    className="h-9 text-[10px] font-black uppercase"
+                    onClick={() => onEdit(tx)}
+                  >
+                    <Edit className="h-3.5 w-3.5 mr-2" />
+                    Modify
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-9 w-9 text-red-500"
+                    onClick={() => onDelete(tx.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            );
-          })}
+            ))}
 
-          {/* Bottom spacer */}
-          <div style={{ height: virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0) }} />
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }
