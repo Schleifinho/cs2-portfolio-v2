@@ -44,8 +44,15 @@ export function AddSaleDialog({
     }, [itemId, sale, open]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.type === "number" ? parseFloat(e.target.value) || 0 : e.target.value;
-        setForm({ ...form, [e.target.name]: value });
+        const { name, value } = e.target;
+
+        // allow only digits, comma, dot
+        if (!/^[0-9.,]*$/.test(value)) return;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     const revenue = (form.quantity * form.price).toFixed(2);
@@ -117,7 +124,8 @@ export function AddSaleDialog({
                             id="quantity"
                             name="quantity"
                             type="number"
-                            min="1"
+                            step="1"
+                            min="0"
                             value={form.quantity}
                             onChange={handleChange}
                             className="font-mono font-bold focus-visible:ring-green-500/30"
