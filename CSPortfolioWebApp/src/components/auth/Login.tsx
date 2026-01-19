@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
     onTabChange: (tab: string) => void;
@@ -12,6 +13,7 @@ interface LoginProps {
 
 export const Login = ({ onTabChange }: LoginProps) => {
     const { login } = useAuth();
+    const navigate = useNavigate();
     const [form, setForm] = useState<UserLoginDto>({
         username: "",
         password: "",
@@ -29,7 +31,11 @@ export const Login = ({ onTabChange }: LoginProps) => {
         setLoading(true);
 
         try {
-            await login(form);
+            let u = await login(form);
+            if(u !== null) {
+                onTabChange("dashboard");    // update activeTab state
+                navigate("/dashboard");      // <-- redirect to dashboard
+            }
         } catch {
             setError("Invalid username or password");
         } finally {

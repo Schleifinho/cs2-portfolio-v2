@@ -39,26 +39,20 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
     --gradient-accent: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-card: linear-gradient(135deg, hsl(220 15% 10%), hsl(220 15% 12%));
-    
+
     --shadow-primary: 0 10px 30px -10px hsl(217 91% 60% / 0.3);
     --shadow-card: 0 4px 20px -4px hsl(220 15% 0% / 0.4);
 
     --radius: 0.5rem;
 
+    /* Sidebar (light mode) */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -90,12 +84,14 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
+
+    /* Sidebar (dark mode) — FIXED */
+    --sidebar-background: 240 5.9% 10%;       /* dark background */
+    --sidebar-foreground: 210 40% 98%;        /* white text */
+    --sidebar-primary: 224.3 76.3% 48%;       /* active button bg */
+    --sidebar-primary-foreground: 0 0% 100%;  /* active button text */
+    --sidebar-accent: 240 3.7% 15.9%;         /* hover bg */
+    --sidebar-accent-foreground: 210 40% 98%; /* hover text white */
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
@@ -113,8 +109,8 @@ All colors MUST be HSL.
 
 .no-scrollbar {
   -ms-overflow-style: none;      /* IE & Edge */
-  scrollbar-width: none;        /* Firefox */
+  scrollbar-width: none;         /* Firefox */
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;                /* Chrome, Safari */
+  display: none;                 /* Chrome, Safari */
 }

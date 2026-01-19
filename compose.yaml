@@ -44,7 +44,7 @@
         condition: service_started
         
   csportfolio-web-app:
-    image: mschleifer/csportfolio-web-app:0.0.4
+    image: mschleifer/csportfolio-web-app:0.0.5
     build:
       context: ./CSPortfolioWebApp   # subfolder is the build context
       dockerfile: Dockerfile         # Dockerfile inside subfolder
