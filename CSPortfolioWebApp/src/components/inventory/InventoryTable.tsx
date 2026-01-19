@@ -26,7 +26,7 @@ import {
   Minus,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown, X
 } from "lucide-react";
 
 import {getInventoryEntries} from "@/lib/inventoryApi";
@@ -140,7 +140,7 @@ export function InventoryTable() {
               onClick={() => setSearch("")}
               className="absolute right-2 top-2.5 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
             >
-              ✕
+              <X className="h-4 w-4"/>
             </button>
           )}
         </div>

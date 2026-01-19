@@ -4,11 +4,15 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/Helper/getCroppedImg";
+import { UserCircle, UploadCloud, Move, ZoomIn, ShieldCheck, Image as ImageIcon, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {Label} from "@/components/ui/label.tsx";
 
 interface Props {
     open: boolean;
@@ -30,7 +34,6 @@ export const AvatarUploadDialog = ({ open, onOpenChange }: Props) => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Prevent browser file open on drag
     useEffect(() => {
         const prevent = (e: DragEvent) => e.preventDefault();
         window.addEventListener("dragover", prevent);
@@ -66,116 +69,146 @@ export const AvatarUploadDialog = ({ open, onOpenChange }: Props) => {
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent
-                className="
-          max-w-lg overflow-hidden border bg-card shadow-card p-0
-        "
-            >
-                {/* HEADER */}
-                <DialogHeader className="border-b bg-gradient-primary px-6 py-4">
-                    <DialogTitle className="text-lg font-semibold text-primary-foreground">
-                        Update Profile Picture
-                    </DialogTitle>
-                </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="max-w-md overflow-hidden p-0 border-border/60 gap-0">
+              {/* HEADER: Strategic Terminal Style */}
+              <DialogHeader className="px-6 py-5 border-b border-border/40 bg-muted/5">
+                  <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                          <UserCircle className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                          <DialogTitle className="text-xl font-black uppercase tracking-tight">
+                              Identity Branding
+                          </DialogTitle>
+                          <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
+                              Profile Asset Calibration
+                          </p>
+                      </div>
+                  </div>
+              </DialogHeader>
 
-                {/* BODY */}
-                <div className="flex flex-col items-center gap-6 p-6">
-                    {/* Crop Area */}
-                    <div
-                        onDrop={(e) => {
-                            e.preventDefault();
-                            setDragOver(false);
-                            const file = e.dataTransfer.files?.[0];
-                            if (file) processFile(file);
-                        }}
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                            setDragOver(true);
-                        }}
-                        onDragLeave={() => setDragOver(false)}
-                        className={`
-              relative h-72 w-72 rounded-full border
-              overflow-hidden transition-colors
-              ${dragOver ? "border-primary bg-primary/10" : "bg-muted"}
-            `}
-                    >
-                        {imageSrc ? (
-                            <Cropper
-                                image={imageSrc}
-                                crop={crop}
-                                zoom={zoom}
-                                aspect={1}
-                                cropShape="round"
-                                showGrid={false}
-                                onCropChange={setCrop}
-                                onZoomChange={setZoom}
-                                onCropComplete={onCropComplete}
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-                                Drag image here
+              {/* BODY: The Calibration Chamber */}
+              <div className="flex flex-col items-center gap-6 p-6">
+                  <div
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        setDragOver(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) processFile(file);
+                    }}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOver(true);
+                    }}
+                    onDragLeave={() => setDragOver(false)}
+                    className={`
+                            relative h-64 w-64 rounded-full border-2 border-dashed
+                            overflow-hidden transition-all duration-300 shadow-inner
+                            ${dragOver ? "border-primary bg-primary/5 scale-105" : "border-border/60 bg-muted/20"}
+                            ${imageSrc ? "border-solid border-primary/40" : ""}
+                        `}
+                  >
+                      {imageSrc ? (
+                        <Cropper
+                          image={imageSrc}
+                          crop={crop}
+                          zoom={zoom}
+                          aspect={1}
+                          cropShape="round"
+                          showGrid={false}
+                          onCropChange={setCrop}
+                          onZoomChange={setZoom}
+                          onCropComplete={onCropComplete}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 gap-2">
+                            <UploadCloud className="h-10 w-10 text-muted-foreground/40" />
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Drop Image Here</p>
+                                <p className="text-[9px] text-muted-foreground/60">PNG, JPG or WEBP supported</p>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Controls */}
-                    <div className="flex w-full items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Size</span>
-                            <select
-                                value={size}
-                                disabled={!imageSrc}
-                                onChange={(e) => setSize(Number(e.target.value))}
-                                className="
-                  rounded-md border bg-background px-2 py-1 text-sm
-                  disabled:opacity-50
-                "
-                            >
-                                {ALLOWED_SIZES.map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}×{s}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
+                      )}
+                  </div>
 
-                        <Button
-                            variant="secondary"
-                            className="ml-auto"
+                  {/* INTERFACE CONTROLS */}
+                  <div className="w-full space-y-4">
+                      <div className="flex flex-col gap-2">
+                          <Label className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-1.5">
+                              <ShieldCheck className="h-3 w-3" /> Output Resolution (px)
+                          </Label>
+                          <div className="grid grid-cols-4 gap-2">
+                              {ALLOWED_SIZES.map((s) => (
+                                <button
+                                  key={s}
+                                  disabled={!imageSrc}
+                                  onClick={() => setSize(s)}
+                                  className={`
+                                            py-2 rounded-md border text-[10px] font-mono font-bold transition-all
+                                            ${size === s
+                                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                    : "bg-background text-muted-foreground border-border/60 hover:border-primary/40"}
+                                            disabled:opacity-40 disabled:cursor-not-allowed
+                                        `}
+                                >
+                                    {s}
+                                </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                          <div className="flex items-center gap-4 text-muted-foreground/60">
+                              <div className="flex items-center gap-1">
+                                  <Move className="h-3 w-3" />
+                                  <span className="text-[9px] font-bold uppercase">Drag to Pan</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                  <ZoomIn className="h-3 w-3" />
+                                  <span className="text-[9px] font-bold uppercase">Scroll to Zoom</span>
+                              </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-[10px] font-black uppercase tracking-widest border-muted-foreground/20"
                             onClick={() => fileInputRef.current?.click()}
-                        >
-                            Select Image
-                        </Button>
-                    </div>
+                          >
+                              <ImageIcon className="h-3 w-3 mr-2" /> Browse
+                          </Button>
+                      </div>
+                  </div>
 
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={(e) => e.target.files && processFile(e.target.files[0])}
-                    />
-                </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => e.target.files && processFile(e.target.files[0])}
+                  />
+              </div>
 
-                {/* FOOTER */}
-                <div className="flex gap-3 border-t bg-secondary/30 px-6 py-4">
-                    <Button
-                        variant="ghost"
-                        className="flex-1"
-                        onClick={() => onOpenChange(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className="flex-1 shadow-primary"
-                        disabled={!imageSrc || loading}
-                        onClick={handleUpload}
-                    >
-                        {loading ? "Uploading..." : "Save Avatar"}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+              {/* FOOTER: Professional Action Bar */}
+              <div className="flex gap-3 border-t border-border/40 bg-muted/10 px-6 py-4">
+                  <Button
+                    variant="ghost"
+                    className="flex-1 text-[10px] font-black uppercase tracking-widest h-10"
+                    onClick={() => onOpenChange(false)}
+                  >
+                      Abort
+                  </Button>
+                  <Button
+                    className="flex-1 h-10 shadow-md text-[10px] font-black uppercase tracking-widest gap-2"
+                    disabled={!imageSrc || loading}
+                    onClick={handleUpload}
+                  >
+                      {loading ? "Processing..." : (
+                        <><Check className="h-3.5 w-3.5" /> Deploy Avatar</>
+                      )}
+                  </Button>
+              </div>
+          </DialogContent>
+      </Dialog>
     );
 };

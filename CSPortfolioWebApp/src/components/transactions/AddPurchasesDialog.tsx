@@ -14,11 +14,12 @@ import { addPurchaseByItemId, updatePurchase } from "@/lib/purchasesApi";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Purchase } from "@/types/Purchase.ts";
+import { ShoppingCart, Calculator, BadgeEuro, Hash } from "lucide-react";
 
 export interface AddPurchaseDialogProps {
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
-    purchase?: Purchase; // edit mode if passed
+    purchase?: Purchase;
     itemId: number;
 }
 
@@ -35,89 +36,126 @@ export function AddPurchaseDialog({
         price: purchase?.price ?? 0,
     });
 
-    // Reset form when item or purchase changes
     useEffect(() => {
         setForm({
             quantity: purchase?.quantity ?? 1,
             price: purchase?.price ?? 0,
         });
-    }, [itemId, purchase]);
+    }, [itemId, purchase, open]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const value = e.target.type === "number" ? parseFloat(e.target.value) || 0 : e.target.value;
+        setForm({ ...form, [e.target.name]: value });
     };
+
+    const subtotal = (form.quantity * form.price).toFixed(2);
 
     const handleSubmit = async () => {
         try {
             if (purchase?.id) {
-                // edit mode
                 await updatePurchase({ itemId, ...purchase, ...form });
-                toast({ title: "Purchase updated" });
+                toast({ title: "Purchase entry updated" });
             } else {
-                // add mode
                 await addPurchaseByItemId({
                     ...form,
                     itemId,
                     timestamp: new Date(),
                 });
-                toast({ title: "Purchase added" });
+                toast({ title: "Asset acquisition logged" });
             }
 
-            // Refresh queries
             await queryClient.invalidateQueries({ queryKey: ["purchases"] });
             await queryClient.invalidateQueries({ queryKey: ["inventoryEntries"] });
 
-            onOpenChange?.(false); // ✅ close via parent
+            onOpenChange?.(false);
         } catch (err) {
-            toast({ title: "Failed to save purchase", variant: "destructive" });
+            toast({ title: "Operation failed", variant: "destructive" });
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{purchase ? "Edit Purchase" : "Add Purchase"}</DialogTitle>
-                    <DialogDescription>
-                        Fill in the details for this purchase.
-                    </DialogDescription>
-                </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="sm:max-w-[425px] overflow-hidden">
+              <DialogHeader>
+                  <div className="flex items-center gap-2 mb-1">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                          <ShoppingCart className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                          <DialogTitle className="text-xl font-black uppercase tracking-tight">
+                              {purchase ? "Modify Acquisition" : "Log Purchase"}
+                          </DialogTitle>
+                          <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
+                              Asset Ledger Entry
+                          </p>
+                      </div>
+                  </div>
+                  <DialogDescription className="text-xs">
+                      Enter the transaction details to update your inventory balance.
+                  </DialogDescription>
+              </DialogHeader>
 
-                <div className="space-y-4">
-                    <div className="flex flex-col space-y-1">
-                        <Label htmlFor="quantity">Quantity</Label>
-                        <Input
+              <div className="space-y-6 py-4">
+                  {/* LIVE PREVIEW CARD */}
+                  <div className="bg-muted/30 border border-border/60 rounded-xl p-4 flex flex-col items-center justify-center space-y-1 group transition-colors hover:bg-muted/50">
+                      <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Calculated Subtotal</span>
+                      <div className="text-3xl font-black tracking-tighter text-primary">
+                          {subtotal}€
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/70">
+                          <Calculator className="h-3 w-3" />
+                          <span>{form.quantity} units @ {Number(form.price).toFixed(2)}€</span>
+                      </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="quantity" className="text-[10px] uppercase font-black tracking-widest text-muted-foreground ml-1 flex items-center gap-1">
+                              <Hash className="h-3 w-3" /> Quantity
+                          </Label>
+                          <Input
                             id="quantity"
                             name="quantity"
                             type="number"
+                            min="1"
                             value={form.quantity}
                             onChange={handleChange}
-                        />
-                    </div>
-                    <div className="flex flex-col space-y-1">
-                        <Label htmlFor="price">Price</Label>
-                        <Input
+                            className="font-mono font-bold focus-visible:ring-primary/30"
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="price" className="text-[10px] uppercase font-black tracking-widest text-muted-foreground ml-1 flex items-center gap-1">
+                              <BadgeEuro className="h-3 w-3" /> Price (€)
+                          </Label>
+                          <Input
                             id="price"
                             name="price"
                             type="number"
+                            step="0.01"
                             value={form.price}
                             onChange={handleChange}
-                        />
-                    </div>
-                </div>
+                            className="font-mono font-bold focus-visible:ring-primary/30"
+                          />
+                      </div>
+                  </div>
+              </div>
 
-                <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => onOpenChange?.(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-primary"
-                        onClick={handleSubmit}
-                    >
-                        Save
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+              <DialogFooter className="gap-2 sm:gap-0">
+                  <Button
+                    variant="ghost"
+                    onClick={() => onOpenChange?.(false)}
+                    className="text-[10px] font-black uppercase tracking-widest hover:bg-muted"
+                  >
+                      Abort
+                  </Button>
+                  <Button
+                    className="bg-primary text-primary-foreground hover:opacity-90 shadow-md text-[10px] font-black uppercase tracking-widest px-8"
+                    onClick={handleSubmit}
+                  >
+                      {purchase ? "Update Ledger" : "Commit Purchase"}
+                  </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     );
 }

@@ -4,30 +4,34 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { getItems, deleteItem } from "@/lib/itemsApi";
 import { Item } from "@/types/Item";
 
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowUpDown, Edit, Trash, ShoppingCart } from "lucide-react";
+import {
+  Search,
+  ArrowUpDown,
+  Edit,
+  Trash,
+  ShoppingCart,
+  ChevronUp,
+  ChevronDown,
+  X,
+  Database,
+  Package
+} from "lucide-react";
 import { AddItemDialog } from "@/components/items/AddItemsDialog";
 import { toast } from "@/hooks/use-toast";
 import { AddPurchaseDialog } from "@/components/transactions/AddPurchasesDialog.tsx";
 import { useTokenSearch } from "@/lib/searchbar.ts";
 import { useAuth } from "@/lib/AuthContext.tsx";
-import {ScrollArea} from "@/components/ui/scroll-area.tsx";
-import {AppRoles} from "@/types/AppRoles.ts";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+import { AppRoles } from "@/types/AppRoles.ts";
+import { Badge } from "@/components/ui/badge";
+
+// Define consistent column widths for desktop alignment
+const COL_WIDTHS = {
+  item: "flex-1 md:w-[80%]",
+  actions: "w-[120px] md:w-[20%]"
+};
 
 export function ItemsTable() {
   const queryClient = useQueryClient();
@@ -36,27 +40,20 @@ export function ItemsTable() {
   const { data: items = [], isLoading, isError, error } = useQuery<Item[]>({
     queryKey: ["items", user?.username],
     queryFn: getItems,
-    select: (data) =>
-        [...data].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+    select: (data) => [...data].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
     staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 30,
   });
 
   const [search, setSearch] = useState("");
   const filteredItems = useTokenSearch(items, search, (s) => s.name);
 
   // Sorting
-  type SortKey = "name" | null;
-  const [sortKey, setSortKey] = useState<SortKey>(null);
+  const [sortKey, setSortKey] = useState<"name" | null>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
+  const handleSort = (key: "name") => {
+    if (sortKey === key) setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortOrder("asc"); }
   };
 
   const sortedItems = useMemo(() => {
@@ -72,13 +69,14 @@ export function ItemsTable() {
 
   // Virtualization
   const parentRef = useRef<HTMLDivElement>(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   const rowVirtualizer = useVirtualizer({
     count: sortedItems.length,
     getScrollElement: () => parentRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement,
-    estimateSize: () => 80,
-    overscan: 50,
+    estimateSize: () => (isMobile ? 140 : 64),
+    overscan: 20,
   });
-
 
   // Edit / Delete / Purchase state
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -90,180 +88,189 @@ export function ItemsTable() {
     if (!confirm("Are you sure you want to delete this item?")) return;
     try {
       await deleteItem(id);
-      toast({ title: "Item deleted", variant: "default" });
+      toast({ title: "Item deleted" });
       await queryClient.invalidateQueries({ queryKey: ["items"] });
     } catch {
       toast({ title: "Failed to delete item", variant: "destructive" });
     }
   };
 
-  if (isLoading) return <p className="p-4">Loading items...</p>;
-  if (isError) return <p className="p-4 text-red-500">Error: {(error as Error).message}</p>;
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortKey !== column) return <ArrowUpDown className="h-3 w-3 opacity-30 ml-1" />;
+    return sortOrder === "asc" ? <ChevronUp className="h-3 w-3 ml-1 text-primary" /> : <ChevronDown className="h-3 w-3 ml-1 text-primary" />;
+  };
+
+  if (isLoading) return <div className="p-8 text-center animate-pulse text-muted-foreground">Indexing Global Catalog...</div>;
+  if (isError) return <div className="p-8 text-center text-red-500">Database Connection Error: {(error as Error).message}</div>;
 
   return (
-      <div className="flex-1 space-y-6 p-8">
-        {/* Header & Search */}
-        <div className="flex items-center gap-4">
-          <h2 className="w-1/2 text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
-            Item Catalog
-          </h2>
-          <div className="relative flex-1 max-w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden space-y-6 p-4 sm:p-6 lg:p-8">
+
+      {/* HEADER SECTION */}
+      <div className="flex flex-col gap-4 shrink-0 px-1">
+        {/* SEARCH & ACTIONS ROW */}
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch md:items-center justify-between w-full min-w-0">
+          {/* Search Input Container */}
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10"/>
             <Input
-                type="text"
-                placeholder="Search by name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 w-full"
+              placeholder="Search by name or token..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 md:h-9 w-full bg-background border-muted/40 focus:border-primary/40 transition-all"
             />
-            {/* Clear Button */}
             {search && (
-                <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-2 top-2.5 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
-                >
-                  ✕
-                </button>
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4"/>
+              </button>
             )}
           </div>
-          <AddItemDialog />
+
+          {/* Add Item Button - Full width on mobile, inline on desktop */}
+          <div className="shrink-0">
+            <AddItemDialog />
+          </div>
+        </div>
+      </div>
+
+      {/* LIST CONTAINER */}
+      <div className="flex-1 min-h-0 bg-card border border-border/60 rounded-xl shadow-sm overflow-hidden flex flex-col">
+
+        {/* DESKTOP HEADER (Flex-aligned with body) */}
+        <div className="hidden md:flex bg-muted/5 border-b shrink-0 pr-4 py-3 px-6">
+          <div
+            onClick={() => handleSort("name")}
+            className={`${COL_WIDTHS.item} cursor-pointer select-none flex items-center gap-1 uppercase text-[10px] font-black tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors`}
+          >
+            Item Database ({sortedItems.length}) <SortIcon column="name" />
+          </div>
+          <div className={`${COL_WIDTHS.actions} text-right uppercase text-[10px] font-black tracking-widest text-muted-foreground/70`}>
+            Operations
+          </div>
         </div>
 
-        {/* Table Card */}
-        <Card className="bg-gradient-card shadow-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">
-              All Items ({sortedItems.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table className="table-fixed border-collapse">
-              <TableHeader>
-                <TableRow className="border-border">
-                  <TableHead
-                      onClick={() => handleSort("name")}
-                      className="cursor-pointer select-none text-muted-foreground w-4/5"
-                  >
-                    Item
-                    <ArrowUpDown className="inline-block ml-1 h-4 w-4" />
-                  </TableHead>
-                  <TableHead className="w-1/5 text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-            </Table>
-            <ScrollArea
-                ref={parentRef}
-                className="h-[calc(100vh-300px)] w-full"
-            >
-              <Table className="table-fixed border-collapse">
-                <TableBody>
-                  {/* Top spacer */}
-                  <tr style={{ height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+        {/* VIRTUALIZED SCROLL AREA */}
+        <ScrollArea ref={parentRef} className="flex-1 w-full">
+          <div className="w-full relative">
+            <div style={{ height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0 }} />
 
-                  {rowVirtualizer.getVirtualItems().map((vRow) => {
-                    const item = sortedItems[vRow.index];
-                    return (
-                        <TableRow
-                            key={item.id}
-                            style={{ height: vRow.size }}
-                            className="border-border hover:bg-secondary/50"
-                        >
-                          <TableCell className="flex items-center space-x-3 w-4/5 ">
-                            {item.iconUrl ? (
-                                <img
-                                    src={`https://community.fastly.steamstatic.com/economy/image/${item.iconUrl}`}
-                                    alt={item.name}
-                                    className="h-20 w-20 rounded object-contain border border-border"
-                                    loading="lazy"
-                                />
-                            ) : (
-                                <img
-                                    src={`/uploads/profile/default.jpg?v=${Date.now()}`}
-                                    alt={item.name}
-                                    className="h-20 w-20 rounded object-contain border border-border"
-                                    loading="lazy"
-                                />
-                            )}
-                            <p className="font-medium text-foreground">{item.name}</p>
-                          </TableCell>
-                          <TableCell className="w-1/5 text-right">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10"
-                                onClick={() => {
-                                  setSelectedItemId(item.id);
-                                  setPurchaseDialogOpen(true);
-                                }}
-                            >
-                              <ShoppingCart className="h-3 w-3" />
-                            </Button>
-                            { hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10"
-                                onClick={() => {
-                                  setEditingItem(item);
-                                  setEditDialogOpen(true);
-                                }}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                                )
-                            }
-                            { hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10"
-                                onClick={() => handleDelete(item.id)}
-                            >
-                              <Trash className="h-3 w-3" />
-                            </Button>)
-                          }
-                          </TableCell>
-                        </TableRow>
-                    );
-                  })}
+            {rowVirtualizer.getVirtualItems().map((vRow) => {
+              const item = sortedItems[vRow.index];
+              if (!item) return null;
 
-                  {/* Bottom spacer */}
-                  <tr
-                      style={{
-                        height:
-                            rowVirtualizer.getTotalSize() -
-                            (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0),
-                      }}
-                  />
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+              return (
+                <div key={item.id} style={{ height: vRow.size }} className="border-b border-border/40 last:border-0">
 
-        {/* Edit Dialog */}
-        {editingItem && (
-            <AddItemDialog
-                item={editingItem}
-                open={editDialogOpen}
-                onOpenChange={(open) => {
-                  setEditDialogOpen(open);
-                  if (!open) setEditingItem(null);
-                }}
-            />
-        )}
+                  {/* --- DESKTOP VIEW --- */}
+                  <div className="hidden md:flex w-full items-center px-6 hover:bg-muted/20 transition-all group h-full">
+                    <div className={`${COL_WIDTHS.item} flex items-center gap-4 min-w-0`}>
+                      <div className="h-12 w-12 shrink-0 bg-muted/20 rounded-lg border border-border/50 flex items-center justify-center overflow-hidden group-hover:border-primary/30 transition-colors">
+                        <img
+                          src={item.iconUrl ? `https://community.fastly.steamstatic.com/economy/image/${item.iconUrl}` : "/uploads/profile/default.jpg"}
+                          className="h-10 w-10 object-contain p-0.5"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-bold truncate tracking-tight text-foreground">{item.name}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground/60">REF: #{item.id}</span>
+                      </div>
+                    </div>
 
-        {/* Purchase Dialog */}
-        {selectedItemId !== null && (
-            <AddPurchaseDialog
-                open={purchaseDialogOpen}
-                onOpenChange={(open) => {
-                  setPurchaseDialogOpen(open);
-                  if (!open) setSelectedItemId(null);
-                }}
-                itemId={selectedItemId}
-            />
-        )}
+                    <div className={`${COL_WIDTHS.actions} flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0`}>
+                      <Button size="icon" variant="secondary" className="h-8 w-8 text-primary shadow-sm" onClick={() => { setSelectedItemId(item.id); setPurchaseDialogOpen(true); }}>
+                        <ShoppingCart className="h-4 w-4" />
+                      </Button>
+                      {hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
+                        <>
+                          <Button size="icon" variant="outline" className="h-8 w-8 border-muted" onClick={() => { setEditingItem(item); setEditDialogOpen(true); }}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="outline" className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-500/10 border-muted" onClick={() => handleDelete(item.id)}>
+                            <Trash className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* --- MOBILE CARD VIEW (Matches Inventory & Transactions) --- */}
+                  <div className="flex md:hidden flex-col p-4 space-y-3">
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 shrink-0 bg-muted/20 rounded-xl border border-border/60 flex items-center justify-center">
+                        <img
+                          src={item.iconUrl ? `https://community.fastly.steamstatic.com/economy/image/${item.iconUrl}` : "/uploads/profile/default.jpg"}
+                          className="h-11 w-11 object-contain"
+                          alt={item.name}
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black leading-tight">{item.name}</span>
+                        </div>
+                        <Badge variant="outline" className="w-fit mt-1.5 h-4 px-1.5 text-[9px] font-mono border-muted text-muted-foreground uppercase">
+                          Registry ID: {item.id}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-md bg-primary hover:bg-primary/90"
+                        onClick={() => { setSelectedItemId(item.id); setPurchaseDialogOpen(true); }}
+                      >
+                        <ShoppingCart className="h-3.5 w-3.5" /> Buy Asset
+                      </Button>
+
+                      {hasAnyRole(AppRoles.Mod, AppRoles.Admin) && (
+                        <div className="flex gap-1.5">
+                          <Button variant="outline" size="icon" className="h-10 w-10 border-muted/60" onClick={() => { setEditingItem(item); setEditDialogOpen(true); }}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="icon" className="h-10 w-10 text-red-500 border-muted/60" onClick={() => handleDelete(item.id)}>
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+            <div style={{ height: rowVirtualizer.getTotalSize() - (rowVirtualizer.getVirtualItems().at(-1)?.end ?? 0) }} />
+          </div>
+        </ScrollArea>
       </div>
+
+      {/* Edit Dialog */}
+      {editingItem && (
+        <AddItemDialog
+          item={editingItem}
+          open={editDialogOpen}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Purchase Dialog */}
+      {selectedItemId !== null && (
+        <AddPurchaseDialog
+          open={purchaseDialogOpen}
+          onOpenChange={(open) => {
+            setPurchaseDialogOpen(open);
+            if (!open) setSelectedItemId(null);
+          }}
+          itemId={selectedItemId}
+        />
+      )}
+    </div>
   );
 }
