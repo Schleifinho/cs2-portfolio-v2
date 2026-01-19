@@ -270,7 +270,8 @@ export function InventoryTable() {
                         <div className="flex items-center gap-3">
                           <img
                             src={entry.iconUrl ? `https://community.fastly.steamstatic.com/economy/image/${entry.iconUrl}` : "/default.jpg"}
-                            className="h-10 w-10 object-contain shrink-0"/>
+                            className="h-10 w-10 object-contain shrink-0"
+                            alt={entry.name}/>
                           <span className="font-medium truncate">{entry.name}</span>
                         </div>
                       </TableCell>
