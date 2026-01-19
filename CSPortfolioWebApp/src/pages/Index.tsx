@@ -81,15 +81,17 @@ const Index = () => {
               activeTab={activeTab}
           />
 
-          <SidebarInset>
-            {/* Top bar */}
-            <div className="flex h-14 items-center gap-3 border-b px-4">
+          <SidebarInset className="flex flex-col h-screen overflow-hidden">
+            {/* Top bar - Fixed height, won't shrink */}
+            <div className="flex h-14 shrink-0 items-center gap-3 border-b px-4 bg-background">
               <SidebarTrigger />
               <h2 className="text-sm font-medium capitalize">{activeTab}</h2>
             </div>
 
-            {/* Main content */}
-            <div className="flex-1 p-4 sm:p-6">{renderContent()}</div>
+            {/* Main content - flex-1 and min-h-0 are critical here */}
+            <div className="flex-1 min-h-0 flex flex-col p-4 sm:p-6 overflow-hidden bg-background">
+              {renderContent()}
+            </div>
           </SidebarInset>
         </div>
       </SidebarProvider>
