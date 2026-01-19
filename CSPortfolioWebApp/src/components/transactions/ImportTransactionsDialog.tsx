@@ -3,8 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
@@ -101,11 +100,6 @@ export const ImportTransactionsDialog = ({open, onOpenChange}: Props) => {
     setItems(prev => prev.map((item, i) => i === index ? {...item, enabled: !item.enabled} : item));
   };
 
-  const setAll = (value: boolean) => {
-    setItems(prev => prev.map(i => ({...i, enabled: value && i.matched})));
-  };
-
-  // 1. Updated Selection Logic inside the component
   const allEnabled = useMemo(() => {
     const matchedItems = items.filter(i => i.matched);
     return matchedItems.length > 0 && matchedItems.every(i => i.enabled);

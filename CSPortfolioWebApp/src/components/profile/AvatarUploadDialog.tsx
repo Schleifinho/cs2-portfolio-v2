@@ -3,15 +3,13 @@ import {
     Dialog,
     DialogContent,
     DialogHeader,
-    DialogTitle,
-    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/Helper/getCroppedImg";
 import { UserCircle, UploadCloud, Move, ZoomIn, ShieldCheck, Image as ImageIcon, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {Label} from "@/components/ui/label.tsx";
 
 interface Props {
